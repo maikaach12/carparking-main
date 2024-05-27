@@ -2,8 +2,9 @@ import 'package:carparking/pages/cote_admin/Gerer_compte.dart';
 import 'package:carparking/pages/cote_admin/Gerer_parking.dart';
 import 'package:carparking/pages/cote_admin/gererplace.dart';
 import 'package:carparking/pages/cote_admin/reclamation_admin.dart';
-import 'package:flutter/material.dart';
+import 'package:carparking/pages/cote_admin/reservationadmin.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminDashboardPage extends StatefulWidget {
@@ -19,7 +20,8 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   bool _showSidebar = false;
   Widget _currentPage = ParkingListView(
-      parkingsCollection: FirebaseFirestore.instance.collection('parkingu'));
+    parkingsCollection: FirebaseFirestore.instance.collection('parkingu'),
+  );
 
   void _navigateTo(Widget page) {
     setState(() {
@@ -46,31 +48,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         accountName: Text(widget.userEmail),
                         accountEmail: Text(widget.userId),
                         currentAccountPicture: CircleAvatar(
-                          child: Text('ADMIN'),
+                          child: Icon(
+                            Icons.person,
+                            size: 40,
+                          ),
+                          backgroundColor: Colors.white,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
                         ),
                       ),
                       ListTile(
+                        leading: Icon(Icons.person),
                         title: Text('Gérer Compte'),
                         onTap: () {
                           _navigateTo(ManageAccountsPage());
                         },
                       ),
                       ListTile(
+                        leading: Icon(Icons.local_parking),
                         title: Text('Gérer Parking'),
                         onTap: () {
                           _navigateTo(GererParkingPage());
                         },
                       ),
                       ListTile(
+                        leading: Icon(Icons.error),
                         title: Text('Gérer Réclamation'),
                         onTap: () {
                           _navigateTo(ReclamationAdminPage());
                         },
                       ),
                       ListTile(
+                        leading: Icon(Icons.place),
                         title: Text('Gérer Place'),
                         onTap: () {
                           _navigateTo(GererPlacePage());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.book),
+                        title: Text('Réservation'),
+                        onTap: () {
+                          _navigateTo(reservationPage());
                         },
                       ),
                     ],
@@ -193,16 +213,15 @@ class ParkingChart extends StatelessWidget {
                 BarChartRodData(
                   toY: data.capacite.toDouble(),
                   color: Colors.blue,
-                  width: 8, // Réduction de la largeur des barres
+                  width: 8,
                 ),
                 BarChartRodData(
                   toY: data.placesDisponible.toDouble(),
                   color: Colors.green,
-                  width: 8, // Réduction de la largeur des barres
+                  width: 8,
                 ),
               ],
-              barsSpace:
-                  2, // Réduction de l'espacement entre les barres d'un même groupe
+              barsSpace: 2,
             ),
           );
         })
@@ -246,11 +265,11 @@ class ParkingChart extends StatelessWidget {
           sideTitles: SideTitles(showTitles: true),
         ),
       ),
-      groupsSpace: 10, // Réduction de l'espacement entre les groupes de barres
+      groupsSpace: 10,
     );
 
     return SizedBox(
-      height: 200, // Réduction de la hauteur du diagramme
+      height: 200,
       child: BarChart(
         barChartData,
         swapAnimationDuration: Duration(milliseconds: 150),

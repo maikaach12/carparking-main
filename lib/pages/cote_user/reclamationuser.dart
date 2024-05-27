@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:carparking/pages/cote_user/reclamlist.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -93,11 +94,11 @@ class _ReclamationPageState extends State<ReclamationPage> {
 
   Future<List<String>> getMatriculesForUser(String userId) async {
     List<String> matricules = [];
-    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('matricule')
-        .where('userId', isEqualTo: userId)
-        .get();
+    QuerySnapshot<Map<String, dynamic>> snapshot =
+        await FirebaseFirestore.instance
+            .collection('matricule')
+            //.where('userId', isEqualTo: userId)
+            .get();
 
     snapshot.docs.forEach((doc) {
       matricules.add(doc.id);
@@ -573,10 +574,20 @@ class _ReclamationPageState extends State<ReclamationPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          _pageController.jumpToPage(index);
-          setState(() {
-            _currentIndex = index;
-          });
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ReclamationListPage(userId: widget.userId),
+              ),
+            );
+          } else {
+            _pageController.jumpToPage(index);
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
         items: [
           BottomNavigationBarItem(

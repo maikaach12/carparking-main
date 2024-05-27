@@ -39,7 +39,53 @@ class _ReclamationListPageState extends State<ReclamationListPage> {
               String status = data['status'] ?? 'en attente';
               return ListTile(
                 title: Text(data['type']),
-                subtitle: Text(data['description']),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(data['description']),
+                    TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Détails de la réclamation'),
+                              content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('IdPlace: ${data['idPlace']}'),
+                                  Text('Matricule: ${data['matricule']}'),
+                                  Text(
+                                      'ReservationId: ${data['reservationId']}'),
+                                  Row(
+                                    children: [
+                                      Text('Timestamp: '),
+                                      Text(
+                                        formatTimestamp(data['timestamp']),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('Fermer'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: Text('Voir détails'),
+                    ),
+                  ],
+                ),
                 trailing: status == 'envoyé'
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
@@ -99,5 +145,12 @@ class _ReclamationListPageState extends State<ReclamationListPage> {
         },
       ),
     );
+  }
+
+  String formatTimestamp(Timestamp timestamp) {
+    final DateTime dateTime = timestamp.toDate();
+    final String formattedTime =
+        "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+    return formattedTime;
   }
 }
