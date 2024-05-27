@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "625483831682",
+    "project_id": "carparking-ec2e9",
+    "storage_bucket": "carparking-ec2e9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:625483831682:android:16cf083d760e53a5c5179b",
+        "android_client_info": {
+          "package_name": "com.example.carparking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhcP5eJ5OYaXoiTu215YC6ttcCb5rQ1HQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
