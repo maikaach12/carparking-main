@@ -1,4 +1,4 @@
-import 'package:carparking/pages/cote_admin/reclamationadmindetail.dart';
+import 'package:carparking/pages/cote_admin/gerer/reclamationadmindetail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

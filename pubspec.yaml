@@ -56,6 +56,9 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_charts: ^0.5.2
   fl_chart: ^0.68.0
+  flutter_mapbox_navigation: ^0.2.2
+  percent_indicator: ^4.2.3
+  flutter_spinkit: ^5.2.1
 
 
 

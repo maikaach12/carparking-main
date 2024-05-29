@@ -1,8 +1,12 @@
 // Importations
-import 'package:carparking/pages/cote_admin/reclamation_admin.dart';
+import 'package:carparking/pages/cote_admin/AdminDashboardPage.dart';
+import 'package:carparking/pages/cote_admin/gerer/reclamation_admin.dart';
+import 'package:carparking/pages/cote_admin/stat/ReservationFrequencyPage.dart';
+import 'package:carparking/pages/cote_admin/stat/reservationchart.dart';
 import 'package:carparking/pages/cote_user/reclamlist.dart';
 import 'package:carparking/pages/login_signup/firstPage.dart';
 import 'package:carparking/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +30,6 @@ class MyApp extends StatelessWidget {
         title: 'CarParking.dz',
         home: FirstPage()
         //PaiementOnlinePage(reservationId: 'rYYqO8wzkDp9Q8Qq6GAp', )
-
         );
   }
 }

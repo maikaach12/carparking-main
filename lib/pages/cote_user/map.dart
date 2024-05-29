@@ -11,9 +11,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math' as math;
 
-/*import 'package:http/http.dart' as http;
-import 'dart:convert';*/
-
 class MapPage extends StatefulWidget {
   final String userId;
 
@@ -30,7 +27,8 @@ class _MapPageState extends State<MapPage> {
   MapController _mapController = MapController();
   int _selectedIndex = 0;
   List<Marker> _markers = [];
-  LatLng? _currentLocation;
+  LatLng _fixedLocation =
+      LatLng(36.75333078055549, 3.4708591109601565); // Fixed location
   List<LatLng> _routePoints = [];
   double _distance = 0.0;
   int _duration = 0;
@@ -42,7 +40,6 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _fetchPlacesFromFirebase();
-    _getCurrentLocation();
     _userId = widget.userId;
     _getNewNotifications(); // Call method to get the number of new notifications
   }
@@ -57,36 +54,6 @@ class _MapPageState extends State<MapPage> {
         .get();
     setState(() {
       _newNotifications = snapshot.docs.length;
-    });
-  }
-
-  void _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    final currentPosition = await Geolocator.getCurrentPosition();
-    setState(() {
-      _currentLocation =
-          LatLng(currentPosition.latitude, currentPosition.longitude);
-      _mapController.move(_currentLocation!, 15.0);
     });
   }
 
@@ -219,14 +186,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _calculateRouteAndDrawLine(LatLng destination) {
-    if (_currentLocation != null) {
-      setState(() {
-        _routePoints = [_currentLocation!, destination];
-        _distance =
-            calculateDistance(destination.latitude, destination.longitude);
-        _duration = calculateDuration(_distance);
-      });
-    }
+    setState(() {
+      _routePoints = [_fixedLocation, destination];
+      _distance =
+          calculateDistance(destination.latitude, destination.longitude);
+      _duration = calculateDuration(_distance);
+    });
   }
 
   void _drawRoute() {
@@ -247,14 +212,12 @@ class _MapPageState extends State<MapPage> {
 
   double calculateDistance(double lat, double lon) {
     double distance = 0.0;
-    if (_currentLocation != null) {
-      distance = Geolocator.distanceBetween(
-        _currentLocation!.latitude,
-        _currentLocation!.longitude,
-        lat,
-        lon,
-      );
-    }
+    distance = Geolocator.distanceBetween(
+      _fixedLocation.latitude,
+      _fixedLocation.longitude,
+      lat,
+      lon,
+    );
     return distance;
   }
 
@@ -409,7 +372,7 @@ class _MapPageState extends State<MapPage> {
                 child: FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    center: _currentLocation ?? LatLng(36.7212737, 3.1892409),
+                    center: _fixedLocation,
                     zoom: 13.0,
                   ),
                   children: [
@@ -422,17 +385,16 @@ class _MapPageState extends State<MapPage> {
                     ),
                     MarkerLayer(
                       markers: [
-                        if (_currentLocation != null)
-                          Marker(
-                            width: 80,
-                            height: 80,
-                            point: _currentLocation!,
-                            child: Icon(
-                              Icons.my_location,
-                              color: Colors.red,
-                              size: 36,
-                            ),
+                        Marker(
+                          width: 80,
+                          height: 80,
+                          point: _fixedLocation,
+                          child: Icon(
+                            Icons.my_location,
+                            color: Colors.red,
+                            size: 36,
                           ),
+                        ),
                       ],
                     ),
                     if (_routeLayer != null) _routeLayer!,
@@ -479,8 +441,9 @@ class _MapPageState extends State<MapPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                ProfilePage(userId: _userId)), // Replace with your profile page
+          builder: (context) =>
+              ProfilePage(userId: _userId), // Replace with your profile page
+        ),
       );
     }
   }
@@ -488,8 +451,6 @@ class _MapPageState extends State<MapPage> {
   @override
   void didUpdateWidget(covariant MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_currentLocation != null) {
-      _mapController.move(_currentLocation!, 13.0);
-    }
+    _mapController.move(_fixedLocation, 13.0);
   }
 }

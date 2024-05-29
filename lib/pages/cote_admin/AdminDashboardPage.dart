@@ -1,11 +1,21 @@
-import 'package:carparking/pages/cote_admin/Gerer_compte.dart';
-import 'package:carparking/pages/cote_admin/Gerer_parking.dart';
-import 'package:carparking/pages/cote_admin/gererplace.dart';
-import 'package:carparking/pages/cote_admin/reclamation_admin.dart';
-import 'package:carparking/pages/cote_admin/reservationadmin.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:carparking/pages/cote_admin/gerer/Gerer_compte.dart';
+import 'package:carparking/pages/cote_admin/gerer/Gerer_parking.dart';
+import 'package:carparking/pages/cote_admin/stat/ReclamationStatistics.dart';
+import 'package:carparking/pages/cote_admin/stat/ReservationFrequencyPage.dart';
+import 'package:carparking/pages/cote_admin/stat/UserStatistics.dart';
+import 'package:carparking/pages/cote_admin/gerer/gererplace.dart';
+import 'package:carparking/pages/cote_admin/stat/carstat.dart';
+import 'package:carparking/pages/cote_admin/stat/navbar.dart';
+import 'package:carparking/pages/cote_admin/stat/parkinglistviewadmin.dart';
+import 'package:carparking/pages/cote_admin/gerer/reclamation_admin.dart';
+import 'package:carparking/pages/cote_admin/gerer/reservationadmin.dart';
+import 'package:carparking/pages/cote_admin/stat/parkingstat.dart';
+import 'package:carparking/pages/cote_admin/stat/placeStat.dart';
+import 'package:carparking/pages/cote_admin/stat/reservStati.dart';
+import 'package:carparking/pages/cote_admin/stat/reservationchart.dart';
+import 'package:carparking/pages/cote_admin/stat/topUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   final String userId;
@@ -28,6 +38,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       _currentPage = page;
       _showSidebar = false;
     });
+  }
+
+  void _navigateToReservationFrequencyPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Chart(
+          reservationsCollection:
+              FirebaseFirestore.instance.collection('reservationU'),
+        ),
+      ),
+    );
   }
 
   @override
@@ -93,6 +115,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           _navigateTo(reservationPage());
                         },
                       ),
+                      ListTile(
+                        leading: Icon(Icons.bar_chart),
+                        title: Text('Reclamation Statistics'),
+                        onTap: () {
+                          _navigateTo(ReclamationStatistics());
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -109,11 +138,36 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       onHomeTap: () {
                         _navigateTo(_currentPage);
                       },
+                      onStatisticsTap: () =>
+                          _navigateToReservationFrequencyPage(context),
                     ),
                     Expanded(
-                      child: Container(
-                        padding: EdgeInsets.all(20),
-                        child: _currentPage,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: TopUserWidget(),
+                            ),
+                            Wrap(
+                              spacing: 10.0, // Reduced spacing between items
+                              runSpacing:
+                                  10.0, // Reduced run spacing between items
+                              children: [
+                                UserStatistics(), // Removed extra padding
+                                ReclamationStatistics(), // Removed extra padding
+                                PlaceStatistics(), // Removed extra padding
+                                CarStatistics(), // Removed extra padding
+                                ParkingStatistics(), // Removed extra padding
+                                ReservationStatistics(), // Removed extra padding
+                              ],
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(20),
+                              child: _currentPage,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -149,188 +203,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   }
 }
 
-class ParkingListView extends StatelessWidget {
-  final CollectionReference<Object?> parkingsCollection;
-
-  ParkingListView({required this.parkingsCollection});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: parkingsCollection.snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        final parkings = snapshot.data!.docs;
-        final parkingData = parkings.map((doc) {
-          final parking = doc.data() as Map<String, dynamic>;
-          return ParkingData(
-            nom: parking['nom'] ?? '',
-            capacite: parking['capacite'] ?? 0,
-            placesDisponible: parking['placesDisponible'] ?? 0,
-          );
-        }).toList();
-
-        return Column(
-          children: [
-            ParkingChart(parkingData: parkingData),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class ParkingData {
-  final String nom;
-  final int capacite;
-  final int placesDisponible;
-
-  ParkingData({
-    required this.nom,
-    required this.capacite,
-    required this.placesDisponible,
-  });
-}
-
-class ParkingChart extends StatelessWidget {
-  final List<ParkingData> parkingData;
-
-  ParkingChart({required this.parkingData});
-
-  @override
-  Widget build(BuildContext context) {
-    List<BarChartGroupData> groups = parkingData
-        .asMap()
-        .map((index, data) {
-          return MapEntry(
-            index,
-            BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: data.capacite.toDouble(),
-                  color: Colors.blue,
-                  width: 8,
-                ),
-                BarChartRodData(
-                  toY: data.placesDisponible.toDouble(),
-                  color: Colors.green,
-                  width: 8,
-                ),
-              ],
-              barsSpace: 2,
-            ),
-          );
-        })
-        .values
-        .toList();
-
-    BarChartData barChartData = BarChartData(
-      barGroups: groups,
-      barTouchData: BarTouchData(
-        enabled: true,
-        touchTooltipData: BarTouchTooltipData(
-          tooltipPadding: const EdgeInsets.all(8),
-          tooltipMargin: 8,
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            final parkingName = parkingData[group.x.toInt()].nom;
-            final label = rodIndex == 0 ? 'Capacité' : 'Places Disponibles';
-            return BarTooltipItem(
-              '$parkingName\n',
-              TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              children: <TextSpan>[
-                TextSpan(
-                  text: '$label: ${rod.toY}',
-                  style: TextStyle(color: rod.color),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: (double value, TitleMeta meta) {
-              return Text(parkingData[value.toInt()].nom);
-            },
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: true),
-        ),
-      ),
-      groupsSpace: 10,
-    );
-
-    return SizedBox(
-      height: 200,
-      child: BarChart(
-        barChartData,
-        swapAnimationDuration: Duration(milliseconds: 150),
-        swapAnimationCurve: Curves.linear,
-      ),
-    );
-  }
-}
-
-class ParkingInfoCard extends StatelessWidget {
-  final String nom;
-  final int capacite;
-  final int placesDisponible;
-
-  ParkingInfoCard({
-    required this.nom,
-    required this.capacite,
-    required this.placesDisponible,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              nom,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text('Capacité: '),
-                Text('$capacite'),
-              ],
-            ),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Text('Places disponibles: '),
-                Text('$placesDisponible'),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class Navbar extends StatelessWidget {
   final VoidCallback onMenuTap;
   final VoidCallback onHomeTap;
+  final VoidCallback onStatisticsTap;
 
-  Navbar({required this.onMenuTap, required this.onHomeTap});
+  Navbar({
+    required this.onMenuTap,
+    required this.onHomeTap,
+    required this.onStatisticsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -347,6 +229,10 @@ class Navbar extends StatelessWidget {
           IconButton(
             onPressed: onHomeTap,
             icon: Icon(Icons.home),
+          ),
+          IconButton(
+            onPressed: onStatisticsTap,
+            icon: Icon(Icons.bar_chart),
           ),
         ],
       ),
