@@ -39,7 +39,7 @@ class _ModifierParkingPageState extends State<ModifierParkingPage> {
     if (changement > 0) {
       // Augmentation de la capacité
       int nouvellesPlacesDisponibles = placesDisponiblesActuelles + changement;
-      _firestore.collection('parkingu').doc(widget.document.id).update({
+      _firestore.collection('parking').doc(widget.document.id).update({
         'capacite': nouvelleCapacite,
         'placesDisponible': nouvellesPlacesDisponibles,
       });
@@ -49,13 +49,13 @@ class _ModifierParkingPageState extends State<ModifierParkingPage> {
       if (nouvellesPlacesDisponibles < 0) {
         nouvellesPlacesDisponibles = 0;
       }
-      _firestore.collection('parkingu').doc(widget.document.id).update({
+      _firestore.collection('parking').doc(widget.document.id).update({
         'capacite': nouvelleCapacite,
         'placesDisponible': nouvellesPlacesDisponibles,
       });
     } else {
       // Capacité inchangée
-      _firestore.collection('parkingu').doc(widget.document.id).update({
+      _firestore.collection('parking').doc(widget.document.id).update({
         'capacite': nouvelleCapacite,
         'placesDisponible': placesDisponiblesActuelles,
       });
@@ -245,7 +245,7 @@ class _ModifierParkingPageState extends State<ModifierParkingPage> {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
                                 _firestore
-                                    .collection('parkingu')
+                                    .collection('parking')
                                     .doc(widget.document.id)
                                     .update({
                                   'nom': _nom,

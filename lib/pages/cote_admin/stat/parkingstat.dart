@@ -7,7 +7,7 @@ class ParkingStatistics extends StatelessWidget {
 
   Future<int> _fetchParkingCount() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('parkingu').get();
+        await FirebaseFirestore.instance.collection('parking').get();
     return querySnapshot.docs.length;
   }
 

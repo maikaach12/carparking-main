@@ -56,7 +56,7 @@ class SupprimerParkingPage extends StatelessWidget {
     final parkingId = document.id;
 
     // Delete the parking document
-    await _firestore.collection('parkingu').doc(parkingId).delete();
+    await _firestore.collection('parking').doc(parkingId).delete();
 
     // Delete related documents from the 'placeU' collection
     final placesQuery = await _firestore

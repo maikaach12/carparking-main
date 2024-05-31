@@ -18,7 +18,7 @@ class _ListeParkingPageState extends State<ListeParkingPage> {
 
   Query<Map<String, dynamic>> _parkingsQuery() {
     Query<Map<String, dynamic>> query =
-        FirebaseFirestore.instance.collection('parkingu').withConverter(
+        FirebaseFirestore.instance.collection('parking').withConverter(
               fromFirestore: (snapshot, _) => snapshot.data()!,
               toFirestore: (data, _) => data,
             );

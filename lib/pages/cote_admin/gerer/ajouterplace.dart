@@ -23,7 +23,7 @@ class _AjouterPlacePageState extends State<AjouterPlacePage> {
   }
 
   Future<void> _fetchParkingNamesAndIds() async {
-    QuerySnapshot querySnapshot = await _firestore.collection('parkingu').get();
+    QuerySnapshot querySnapshot = await _firestore.collection('parking').get();
     List<String> parkingNames = [];
     Map<String, String> parkingIdMap = {};
     for (QueryDocumentSnapshot document in querySnapshot.docs) {
@@ -203,9 +203,9 @@ class _AjouterPlacePageState extends State<AjouterPlacePage> {
       'type': _selectedType,
     });
 
-    // Get the reference to the 'parkingu' document with the selected parking ID
+    // Get the reference to the 'parking' document with the selected parking ID
     DocumentReference parkingRef =
-        _firestore.collection('parkingu').doc(_selectedParkingId);
+        _firestore.collection('parking').doc(_selectedParkingId);
 
     // Get the current values of 'capacite' and 'placesDisponible' for the selected parking
     DocumentSnapshot parkingSnapshot = await parkingRef.get();
@@ -218,7 +218,7 @@ class _AjouterPlacePageState extends State<AjouterPlacePage> {
     // Calculate the new value of 'placesDisponible'
     int newPlacesDisponibles = currentPlacesDisponibles + 1;
 
-    // Update the 'parkingu' document with the new 'capacite' and 'placesDisponible' values
+    // Update the 'parking' document with the new 'capacite' and 'placesDisponible' values
     await parkingRef.update({
       'capacite': newCapacite,
       'placesDisponible': newPlacesDisponibles,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:carparking/pages/cote_user/MesReservationsPage.dart';
+import 'package:carparking/pages/cote_user/reservation/price.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,108 @@ class _ReservationPageState extends State<ReservationPage> {
     true,
     false
   ]; // Initialisé pour sélectionner "Standard" par défaut
+  int? _prixCalcule; // Variable pour stocker le prix calculé
+  int _prix = 0;
+
+  Future<void> _calculerPrix(
+      String reservationId, Timestamp debut, Timestamp fin) async {
+    final dureeTotale = fin.toDate().difference(debut.toDate());
+    final dureeMinutes = dureeTotale.inMinutes;
+
+    print('Durée totale en minutes: $dureeMinutes');
+
+    // Récupérer le document de réservation à partir de l'idReservation
+    final reservationDoc = await FirebaseFirestore.instance
+        .collection('reservationU')
+        .doc(reservationId)
+        .get();
+
+    if (reservationDoc.exists) {
+      print('Document de réservation trouvé');
+    } else {
+      print('Document de réservation non trouvé');
+    }
+
+    // Vérifier si le document de réservation existe et contient idPlace
+    if (reservationDoc.exists &&
+        reservationDoc.data()!.containsKey('idPlace')) {
+      final idPlace = reservationDoc.data()!['idPlace'];
+
+      print('ID de la place: $idPlace');
+
+      // Récupérer le document de place à partir de l'idPlace
+      final placeDoc = await FirebaseFirestore.instance
+          .collection('placeU')
+          .doc(idPlace)
+          .get();
+
+      if (placeDoc.exists) {
+        print('Document de place trouvé');
+      } else {
+        print('Document de place non trouvé');
+      }
+
+      // Vérifier si le document de place existe et contient type
+      if (placeDoc.exists && placeDoc.data()!.containsKey('type')) {
+        final type = placeDoc.data()!['type'];
+        print('Type de place: $type');
+
+        // Récupérer le document de parking associé à partir de l'idParking
+        final idParking = reservationDoc.data()!['idParking'];
+        final parkingDoc = await FirebaseFirestore.instance
+            .collection('parking')
+            .doc(idParking)
+            .get();
+
+        if (parkingDoc.exists) {
+          print('Document de parking trouvé');
+        } else {
+          print('Document de parking non trouvé');
+        }
+
+        if (parkingDoc.exists) {
+          int prixParTranche;
+          if (type == 'handicapé' &&
+              parkingDoc.data()!.containsKey('prixParTrancheHandi')) {
+            prixParTranche = parkingDoc.data()!['prixParTrancheHandi'];
+            print('Prix par tranche (handicapé): $prixParTranche');
+          } else if (type == 'standard' &&
+              parkingDoc.data()!.containsKey('prixParTranche')) {
+            prixParTranche = parkingDoc.data()!['prixParTranche'];
+            print('Prix par tranche (standard): $prixParTranche');
+          } else {
+            print(
+                'Le document de parking ne contient pas le prix par tranche approprié');
+            return;
+          }
+
+          final nombreTranches = (dureeMinutes / 10).ceil();
+          print('Nombre de tranches: $nombreTranches');
+
+          setState(() {
+            _prix = (nombreTranches * prixParTranche).toInt();
+          });
+          setState(() {
+            _prixCalcule = _prix;
+          });
+          print('Prix calculé: $_prix');
+
+          // Mettre à jour le prix dans le document de réservation
+          await FirebaseFirestore.instance
+              .collection('reservationU')
+              .doc(reservationId)
+              .update({'prix': _prix});
+        } else {
+          print(
+              'Le document de parking ne contient pas prixParTranche ou prixParTrancheHandi');
+        }
+      } else {
+        print('Le document de place ne contient pas type');
+      }
+    } else {
+      print('Le document de réservation ne contient pas idPlace');
+    }
+  }
 
   Future<void> _selectDebutReservation(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -151,9 +254,9 @@ class _ReservationPageState extends State<ReservationPage> {
     String? placesAttribueId;
 
     try {
-      // Get the parking document from the 'parkingu' collection
+      // Get the parking document from the 'parking' collection
       final parkingDoc = await FirebaseFirestore.instance
-          .collection('parkingu')
+          .collection('parking')
           .doc(widget.parkingId)
           .get();
 
@@ -226,86 +329,93 @@ class _ReservationPageState extends State<ReservationPage> {
                 'userId': userId,
               }).then((documentRef) {
                 reservationId = documentRef.id;
+                _calculerPrix(
+                        reservationId!, _debutReservation!, _finReservation!)
+                    .then((_) {
+                  setState(() {});
 
-                setState(() {});
-
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      contentPadding: EdgeInsets.zero,
-                      content: Container(
-                        width: double.maxFinite,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: Colors.blue,
-                                    size: 80.0,
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  Text(
-                                    'Votre place $placesAttribueId de parking a bien été réservé !',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold,
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        contentPadding: EdgeInsets.zero,
+                        content: Container(
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: Colors.blue,
+                                      size: 80.0,
                                     ),
-                                  ),
-                                  SizedBox(height: 8.0),
-                                  Text(
-                                    'Retrouvez les détails de votre réservation sur votre page "Mes réservations"',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14.0,
-                                      color: Colors.grey,
+                                    SizedBox(height: 16.0),
+                                    Text(
+                                      'Votre place $placesAttribueId de parking a bien été réservé !',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
+                                    SizedBox(height: 8.0),
+                                    if (_prixCalcule != null)
+                                      Text(
+                                        'Prix à payer : ${_prixCalcule} DA',
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Retrouvez les détails de votre réservation sur votre page "Mes réservations"',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 14.0,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16.0),
+                              if (_prixCalcule != null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      /*  Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                            //  PaiementOnlinePage(),
+                                        ),
+                                      );*/
+                                    },
+                                    child: Text('Payer'),
                                   ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 16.0),
-                            ElevatedButton(
-                              onPressed: () {
-                                // Naviguer vers la page MesReservationsPage
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MesReservationsPage(),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.withOpacity(
-                                    0.5), // Couleur du texte en blanc
-                              ),
-                              child: Text(
-                                'Mes réservations',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16.0,
-                                ), // Couleur du texte en blanc
-                              ),
-                            ),
-                            SizedBox(height: 16.0),
-                          ],
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-                reservationEffectuee = true;
+                      );
+                    },
+                  );
+                  reservationEffectuee = true;
 
-                return;
+                  return;
+                });
               });
             }
             if (reservationEffectuee) {
@@ -442,9 +552,9 @@ class _ReservationPageState extends State<ReservationPage> {
       int ongoingReservationsCount = ongoingReservations.docs.length;
       print('Nombre de réservations en cours: $ongoingReservationsCount');
 
-      // Obtenir le document de parking de la collection parkingu
+      // Obtenir le document de parking de la collection parking
       final parkingDoc = await FirebaseFirestore.instance
-          .collection('parkingu')
+          .collection('parking')
           .doc(widget.parkingId)
           .get();
 
@@ -457,7 +567,7 @@ class _ReservationPageState extends State<ReservationPage> {
 
         // Mettre à jour placesDisponible
         await FirebaseFirestore.instance
-            .collection('parkingu')
+            .collection('parking')
             .doc(widget.parkingId)
             .update({
           'placesDisponible': placesDisponible,
@@ -469,6 +579,9 @@ class _ReservationPageState extends State<ReservationPage> {
       print('Erreur lors de la gestion des places disponibles: $e');
     }
   }
+
+  ///
+//
 
   @override
   void initState() {
@@ -539,7 +652,8 @@ class _ReservationPageState extends State<ReservationPage> {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage(
-                  'lib/images/blue.png'), // Replace with your background image path
+                'lib/images/blue.png',
+              ), // Replace with your background image path
               fit: BoxFit.cover,
             ),
           ),
@@ -760,6 +874,7 @@ class _ReservationPageState extends State<ReservationPage> {
                                 ),
                               ),
                               SizedBox(height: 20),
+                              if (_prixCalcule != null) SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {

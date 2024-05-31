@@ -152,7 +152,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
               // Récupérer le nom du parking à partir de l'ID
               return FutureBuilder<DocumentSnapshot>(
                 future: FirebaseFirestore.instance
-                    .collection('parkingu')
+                    .collection('parking')
                     .doc(idParking)
                     .get(),
                 builder: (context, snapshot) {

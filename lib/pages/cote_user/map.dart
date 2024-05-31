@@ -59,7 +59,7 @@ class _MapPageState extends State<MapPage> {
 
   void _fetchPlacesFromFirebase() async {
     QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('parkingu').get();
+        await FirebaseFirestore.instance.collection('parking').get();
     List<Marker> markers = [];
 
     snapshot.docs.forEach((doc) {
@@ -100,7 +100,7 @@ class _MapPageState extends State<MapPage> {
 
     // Get parking document
     final parkingDoc = await FirebaseFirestore.instance
-        .collection('parkingu')
+        .collection('parking')
         .doc(parkingId)
         .get();
 

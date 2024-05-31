@@ -47,7 +47,7 @@ class _GererPlacePageState extends State<GererPlacePage> {
     } else {
       // If no place is found by ID, search by parking name
       QuerySnapshot parkingSnapshot = await _firestore
-          .collection('parkingu')
+          .collection('parking')
           .where('nom', isEqualTo: searchQuery)
           .get();
 
@@ -271,7 +271,7 @@ class _GererPlacePageState extends State<GererPlacePage> {
 
   Future<void> _deletePlace(DocumentSnapshot document) async {
     DocumentReference parkingRef =
-        _firestore.collection('parkingu').doc(document['id_parking']);
+        _firestore.collection('parking').doc(document['id_parking']);
 
     DocumentSnapshot parkingSnapshot = await parkingRef.get();
     int currentCapacite = parkingSnapshot.get('capacite') ?? 0;

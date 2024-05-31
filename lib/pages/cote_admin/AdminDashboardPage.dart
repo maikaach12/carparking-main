@@ -30,14 +30,14 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   bool _showSidebar = false;
   Widget _currentPage = ParkingListView(
-    parkingsCollection: FirebaseFirestore.instance.collection('parkingu'),
+    parkingsCollection: FirebaseFirestore.instance.collection('parking'),
   );
 
-  void _navigateTo(Widget page) {
-    setState(() {
-      _currentPage = page;
-      _showSidebar = false;
-    });
+  void _navigateToPage(BuildContext context, Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
   }
 
   void _navigateToReservationFrequencyPage(BuildContext context) {
@@ -84,42 +84,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         leading: Icon(Icons.person),
                         title: Text('Gérer Compte'),
                         onTap: () {
-                          _navigateTo(ManageAccountsPage());
+                          _navigateToPage(context, ManageAccountsPage());
                         },
                       ),
                       ListTile(
                         leading: Icon(Icons.local_parking),
                         title: Text('Gérer Parking'),
                         onTap: () {
-                          _navigateTo(GererParkingPage());
+                          _navigateToPage(context, GererParkingPage());
                         },
                       ),
                       ListTile(
                         leading: Icon(Icons.error),
                         title: Text('Gérer Réclamation'),
                         onTap: () {
-                          _navigateTo(ReclamationAdminPage());
+                          _navigateToPage(context, ReclamationAdminPage());
                         },
                       ),
                       ListTile(
                         leading: Icon(Icons.place),
                         title: Text('Gérer Place'),
                         onTap: () {
-                          _navigateTo(GererPlacePage());
+                          _navigateToPage(context, GererPlacePage());
                         },
                       ),
                       ListTile(
                         leading: Icon(Icons.book),
                         title: Text('Réservation'),
                         onTap: () {
-                          _navigateTo(reservationPage());
+                          _navigateToPage(context, reservationPage());
                         },
                       ),
                       ListTile(
                         leading: Icon(Icons.bar_chart),
                         title: Text('Reclamation Statistics'),
                         onTap: () {
-                          _navigateTo(ReclamationStatistics());
+                          _navigateToPage(context, ReclamationStatistics());
                         },
                       ),
                     ],
@@ -136,7 +136,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         });
                       },
                       onHomeTap: () {
-                        _navigateTo(_currentPage);
+                        setState(() {
+                          _currentPage = ParkingListView(
+                            parkingsCollection: FirebaseFirestore.instance
+                                .collection('parking'),
+                          );
+                        });
                       },
                       onStatisticsTap: () =>
                           _navigateToReservationFrequencyPage(context),
@@ -150,16 +155,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               child: TopUserWidget(),
                             ),
                             Wrap(
-                              spacing: 10.0, // Reduced spacing between items
-                              runSpacing:
-                                  10.0, // Reduced run spacing between items
+                              spacing: 10.0,
+                              runSpacing: 10.0,
                               children: [
-                                UserStatistics(), // Removed extra padding
-                                ReclamationStatistics(), // Removed extra padding
-                                PlaceStatistics(), // Removed extra padding
-                                CarStatistics(), // Removed extra padding
-                                ParkingStatistics(), // Removed extra padding
-                                ReservationStatistics(), // Removed extra padding
+                                UserStatistics(),
+                                ReclamationStatistics(),
+                                PlaceStatistics(),
+                                CarStatistics(),
+                                ParkingStatistics(),
+                                ReservationStatistics(),
                               ],
                             ),
                             Container(
