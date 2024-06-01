@@ -58,22 +58,22 @@ class SupprimerParkingPage extends StatelessWidget {
     // Delete the parking document
     await _firestore.collection('parking').doc(parkingId).delete();
 
-    // Delete related documents from the 'placeU' collection
+    // Delete related documents from the 'place' collection
     final placesQuery = await _firestore
-        .collection('placeU')
+        .collection('place')
         .where('id_parking', isEqualTo: parkingId)
         .get();
     for (var doc in placesQuery.docs) {
-      await _firestore.collection('placeU').doc(doc.id).delete();
+      await _firestore.collection('place').doc(doc.id).delete();
     }
 
-    // Delete related documents from the 'reservationU' collection
+    // Delete related documents from the 'reservation' collection
     final reservationsQuery = await _firestore
-        .collection('reservationU')
+        .collection('reservation')
         .where('idParking', isEqualTo: parkingId)
         .get();
     for (var doc in reservationsQuery.docs) {
-      await _firestore.collection('reservationU').doc(doc.id).delete();
+      await _firestore.collection('reservation').doc(doc.id).delete();
     }
 
     // Navigate back to the GererParkingPage after deletion

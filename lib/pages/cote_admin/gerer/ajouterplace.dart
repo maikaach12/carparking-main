@@ -50,7 +50,7 @@ class _AjouterPlacePageState extends State<AjouterPlacePage> {
 
       // Check if the ID already exists in the collection
       QuerySnapshot querySnapshot = await _firestore
-          .collection('placeU')
+          .collection('place')
           .where('id', isEqualTo: customId)
           .get();
 
@@ -196,8 +196,8 @@ class _AjouterPlacePageState extends State<AjouterPlacePage> {
     // Generate a custom ID
     String customId = await _generateCustomId();
 
-    // Add the new place to the 'placeU' collection with the custom ID
-    await _firestore.collection('placeU').doc(customId).set({
+    // Add the new place to the 'place' collection with the custom ID
+    await _firestore.collection('place').doc(customId).set({
       'id': customId,
       'id_parking': _selectedParkingId,
       'type': _selectedType,

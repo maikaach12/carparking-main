@@ -37,7 +37,7 @@ class _ReservationPageState extends State<reservationPage> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('reservationU')
+                  .collection('reservation')
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -169,9 +169,9 @@ class _ReservationPageState extends State<reservationPage> {
                                 onPressed: () {
                                   _showNotificationForm(reservation.userId);
                                   FirebaseFirestore.instance
-                                      .collection('reservationU')
+                                      .collection('reservation')
                                       .doc(reservation.id)
-                                      .delete(); // Supprimer la réservation de la collection reservationU
+                                      .delete(); // Supprimer la réservation de la collection reservation
 
                                   // Supprimer la réservation du tableau "reservations" dans le document de la place
                                   _deleteReservationFromPlace(reservation);
@@ -272,11 +272,9 @@ class _ReservationPageState extends State<reservationPage> {
     // Obtenir l'ID de la place associée à la réservation
     final idPlace = reservation.idPlace;
 
-    // Récupérer le document de la place depuis la collection "placeU"
-    final placeDoc = await FirebaseFirestore.instance
-        .collection('placeU')
-        .doc(idPlace)
-        .get();
+    // Récupérer le document de la place depuis la collection "place"
+    final placeDoc =
+        await FirebaseFirestore.instance.collection('place').doc(idPlace).get();
 
     // Mettre à jour le tableau "reservations" en supprimant la réservation annulée
     if (placeDoc.exists) {
@@ -289,7 +287,7 @@ class _ReservationPageState extends State<reservationPage> {
       }).toList();
 
       await FirebaseFirestore.instance
-          .collection('placeU')
+          .collection('place')
           .doc(idPlace)
           .update({'reservations': updatedReservations});
     }

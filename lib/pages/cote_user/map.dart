@@ -109,11 +109,20 @@ class _MapPageState extends State<MapPage> {
         parkingDoc.data()!.containsKey('placesDisponible')) {
       int placesDisponible = parkingDoc.data()!['placesDisponible'];
 
+      // Calculate distance
+      double distance =
+          calculateDistance(placeLatLng.latitude, placeLatLng.longitude);
+
+      // Update distance in Firestore
+      await _updateParkingDistance(parkingId, distance);
+
+      // Calculate duration
+      int duration = calculateDuration(distance);
+
       showModalBottomSheet(
         context: context,
         builder: (context) {
-          final double distance = _distance / 1000;
-          final int duration = _duration;
+          final double distanceInKm = distance / 1000;
           final String address =
               'Latitude: ${placeLatLng.latitude}, Longitude: ${placeLatLng.longitude}'; // Replace with a method to convert coordinates to address
 
@@ -156,7 +165,7 @@ class _MapPageState extends State<MapPage> {
                     SizedBox(width: 8.0),
                     Icon(Icons.location_on),
                     SizedBox(width: 4.0),
-                    Text('${distance.toStringAsFixed(2)} km'),
+                    Text('${distanceInKm.toStringAsFixed(2)} km'),
                     SizedBox(width: 16.0),
                     Icon(Icons.directions_car),
                     SizedBox(width: 4.0),
@@ -210,9 +219,17 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  Future<void> _updateParkingDistance(String parkingId, double distance) async {
+    await FirebaseFirestore.instance
+        .collection('parking')
+        .doc(parkingId)
+        .update({
+      'distance': distance,
+    });
+  }
+
   double calculateDistance(double lat, double lon) {
-    double distance = 0.0;
-    distance = Geolocator.distanceBetween(
+    double distance = Geolocator.distanceBetween(
       _fixedLocation.latitude,
       _fixedLocation.longitude,
       lat,
@@ -222,7 +239,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   int calculateDuration(double distance) {
-    double averageSpeed = 50.0;
+    double averageSpeed = 50.0; // Average speed in km/h
     double distanceInKm = distance / 1000.0;
     double timeInHours = distanceInKm / averageSpeed;
     int timeInMinutes = (timeInHours * 60).round();
@@ -287,18 +304,7 @@ class _MapPageState extends State<MapPage> {
             },
           ),
           IconButton(
-            icon: Icon(
-                Icons.report_problem), // Add this line for the reclamation icon
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ReclamationPage(userId: _userId),
-                ), // Replace with your reclamation page
-              );
-            },
-          ),
-          IconButton(
+            //   icon: Icon(Icons.notifications),
             icon: Stack(
               children: [
                 Icon(Icons.notifications), // Notification icon
@@ -373,7 +379,7 @@ class _MapPageState extends State<MapPage> {
                   mapController: _mapController,
                   options: MapOptions(
                     center: _fixedLocation,
-                    zoom: 13.0,
+                    zoom: 15.0,
                   ),
                   children: [
                     TileLayer(
@@ -451,6 +457,6 @@ class _MapPageState extends State<MapPage> {
   @override
   void didUpdateWidget(covariant MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _mapController.move(_fixedLocation, 13.0);
+    _mapController.move(_fixedLocation, 20.0);
   }
 }

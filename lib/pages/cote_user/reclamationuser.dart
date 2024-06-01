@@ -64,7 +64,7 @@ class _ReclamationPageState extends State<ReclamationPage> {
     List<String> reservations = [];
     QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
         .instance
-        .collection('reservationU')
+        .collection('reservation')
         .where('userId', isEqualTo: userId)
         .get();
 
@@ -78,7 +78,7 @@ class _ReclamationPageState extends State<ReclamationPage> {
   Future<String> getPlaceNumberFromReservation(String reservationId) async {
     DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
         .instance
-        .collection('reservationU')
+        .collection('reservation')
         .doc(reservationId)
         .get();
 

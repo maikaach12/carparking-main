@@ -13,18 +13,13 @@ class ModifierParkingPage extends StatefulWidget {
 class _ModifierParkingPageState extends State<ModifierParkingPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late String _nom, _place, _latitude, _longitude, _idAdmin;
-  late int _capacite, _distance, _placesDisponible;
+  late String _nom, _place, _latitude, _longitude;
 
   @override
   void initState() {
     super.initState();
     _nom = widget.document['nom'];
     _place = widget.document['place'];
-    _capacite = widget.document['capacite'];
-    _distance = widget.document['distance'];
-    _idAdmin = widget.document['id_admin'];
-    _placesDisponible = widget.document['placesDisponible'];
     _latitude = widget.document['position'].latitude.toString();
     _longitude = widget.document['position'].longitude.toString();
   }
@@ -140,69 +135,6 @@ class _ModifierParkingPageState extends State<ModifierParkingPage> {
                           onSaved: (value) => _place = value!,
                         ),
                         TextFormField(
-                          initialValue: _capacite.toString(),
-                          decoration: InputDecoration(
-                            labelText: 'Capacité :',
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0,
-                              color: Colors.black,
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          enabled: false,
-                        ),
-                        TextFormField(
-                          initialValue: _distance.toString(),
-                          decoration: InputDecoration(
-                            labelText: 'Distance :',
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0,
-                              color: Colors.black,
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer la distance';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) => _distance = int.parse(value!),
-                        ),
-                        TextFormField(
-                          initialValue: _idAdmin,
-                          decoration: InputDecoration(
-                            labelText: 'ID Admin :',
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0,
-                              color: Colors.black,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Veuillez entrer l\'ID de l\'administrateur';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) => _idAdmin = value!,
-                        ),
-                        TextFormField(
-                          initialValue: _placesDisponible.toString(),
-                          decoration: InputDecoration(
-                            labelText: 'Places disponibles :',
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.0,
-                              color: Colors.black,
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          enabled: false,
-                        ),
-                        TextFormField(
                           initialValue: _latitude,
                           decoration: InputDecoration(
                             labelText: 'Latitude :',
@@ -250,8 +182,6 @@ class _ModifierParkingPageState extends State<ModifierParkingPage> {
                                     .update({
                                   'nom': _nom,
                                   'place': _place,
-                                  'distance': _distance,
-                                  'id_admin': _idAdmin,
                                   'position': GeoPoint(
                                     double.parse(_latitude),
                                     double.parse(_longitude),

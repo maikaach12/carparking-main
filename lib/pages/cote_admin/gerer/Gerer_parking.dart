@@ -10,6 +10,38 @@ class GererParkingPage extends StatefulWidget {
 
 class _GererParkingPageState extends State<GererParkingPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late TextEditingController _searchController;
+  List<DocumentSnapshot> _searchResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _searchParking(String searchQuery) async {
+    if (searchQuery.isEmpty) {
+      setState(() {
+        _searchResults = [];
+      });
+      return;
+    }
+
+    QuerySnapshot parkingSnapshot = await _firestore
+        .collection('parking')
+        .where('nom', isEqualTo: searchQuery)
+        .get();
+
+    setState(() {
+      _searchResults = parkingSnapshot.docs;
+    });
+  }
 
   Future<void> _deleteParking(DocumentSnapshot document) async {
     final parkingId = document.id;
@@ -17,22 +49,22 @@ class _GererParkingPageState extends State<GererParkingPage> {
     // Delete the parking document
     await _firestore.collection('parking').doc(parkingId).delete();
 
-    // Delete related documents from the 'placeU' collection
+    // Delete related documents from the 'place' collection
     final placesQuery = await _firestore
-        .collection('placeU')
+        .collection('place')
         .where('id_parking', isEqualTo: parkingId)
         .get();
     for (var doc in placesQuery.docs) {
-      await _firestore.collection('placeU').doc(doc.id).delete();
+      await _firestore.collection('place').doc(doc.id).delete();
     }
 
-    // Delete related documents from the 'reservationU' collection
+    // Delete related documents from the 'reservation' collection
     final reservationsQuery = await _firestore
-        .collection('reservationU')
+        .collection('reservation')
         .where('idParking', isEqualTo: parkingId)
         .get();
     for (var doc in reservationsQuery.docs) {
-      await _firestore.collection('reservationU').doc(doc.id).delete();
+      await _firestore.collection('reservation').doc(doc.id).delete();
     }
 
     // Show a snackbar or other UI feedback
@@ -82,190 +114,170 @@ class _GererParkingPageState extends State<GererParkingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('lib/images/blue.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Gérer Parking',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+    return Scaffold(
+      backgroundColor: Colors
+          .lightBlue[50], // Définit la couleur de l'arrière-plan en bleu clair
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Rechercher par nom de parking',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
                 ),
-              ),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _firestore.collection('parking').snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data!.docs.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'Aucun parking trouvé',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        itemCount: snapshot.data?.docs.length,
-                        itemBuilder: (context, index) {
-                          DocumentSnapshot document =
-                              snapshot.data!.docs[index];
-                          return Card(
-                            margin: EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 5.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            elevation: 5,
-                            child: ListTile(
-                              title: Text(
-                                document['nom'],
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text('Places : ${document['place']}'),
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text(document['nom']),
-                                      content: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(Icons.directions_car),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'Capacité: ${document['capacite']}'),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.location_on),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'Distance: ${document['distance']}'),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.person),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'ID Admin: ${document['id_admin']}'),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.place),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'Places: ${document['place']}'),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.event_seat),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'Places Disponibles: ${document['placesDisponible']}'),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.map),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                  'Position: ${document['position'].toString()}'),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Fermer'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ModifierParkingPage(
-                                                  document: document),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () {
-                                      _showDeleteDialog(context, document);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    } else {
-                      return Center(child: CircularProgressIndicator());
-                    }
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                      _searchResults.clear();
+                    });
                   },
                 ),
               ),
-            ],
+              onChanged: (value) {
+                _searchParking(value);
+              },
+            ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AjouterParkingPage()),
-            );
-          },
-          child: Icon(
-            Icons.add,
-            size: 35,
-            color: Colors.white,
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('parking').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  List<DocumentSnapshot> documents = _searchResults.isNotEmpty
+                      ? _searchResults
+                      : snapshot.data!.docs;
+                  if (documents.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Aucun parking trouvé',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: documents.length,
+                    itemBuilder: (context, index) {
+                      DocumentSnapshot document = documents[index];
+                      return Card(
+                        margin: EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 5.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        elevation: 5,
+                        child: ListTile(
+                          title: Text(
+                            document['nom'],
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text('Places : ${document['place']}'),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text(document['nom']),
+                                  content: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.directions_car),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Capacité: ${document['capacite']}'),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.place),
+                                          SizedBox(width: 8),
+                                          Text('Places: ${document['place']}'),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.event_seat),
+                                          SizedBox(width: 8),
+                                          Text(
+                                              'Places Disponibles: ${document['placesDisponible']}'),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Fermer'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ModifierParkingPage(
+                                          document: document),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  _showDeleteDialog(context, document);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
           ),
-          backgroundColor: Colors.teal,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AjouterParkingPage()),
+          );
+        },
+        child: Icon(
+          Icons.add,
+          size: 35,
+          color: Colors.black,
+        ),
+        backgroundColor: Colors.white,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

@@ -38,7 +38,7 @@ class _ModifierReservationPageState extends State<ModifierReservationPage> {
   Future<bool> checkPlaceAvailability() async {
     // Récupérer toutes les réservations pour vérifier la disponibilité
     QuerySnapshot reservationsSnapshot = await FirebaseFirestore.instance
-        .collection('reservationU')
+        .collection('reservation')
         .where('debut', isLessThan: _finReservation)
         .where('fin', isGreaterThan: _debutReservation)
         .get();
@@ -158,7 +158,7 @@ class _ModifierReservationPageState extends State<ModifierReservationPage> {
                           if (isAvailable) {
                             // Mettre à jour la réservation dans Firestore
                             FirebaseFirestore.instance
-                                .collection('reservationU')
+                                .collection('reservation')
                                 .doc(widget.reservation.id)
                                 .update({
                               'debut': Timestamp.fromDate(_debutReservation),

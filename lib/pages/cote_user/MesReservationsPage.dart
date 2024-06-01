@@ -51,7 +51,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
   Future<void> _annulerReservation(String reservationId, bool supprimer) async {
     // Obtenir les informations de la réservation à annuler
     final reservationDoc = await FirebaseFirestore.instance
-        .collection('reservationU')
+        .collection('reservation')
         .doc(reservationId)
         .get();
 
@@ -60,16 +60,16 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
       final idPlace = reservationDoc.data()?['idPlace'];
       final idParking = reservationDoc.data()?['idParking'];
 
-      // Supprimer la réservation de la collection reservationU
+      // Supprimer la réservation de la collection reservation
       await FirebaseFirestore.instance
-          .collection('reservationU')
+          .collection('reservation')
           .doc(reservationId)
           .delete();
 
-      // Supprimer la réservation du tableau reservations dans la collection placeU
+      // Supprimer la réservation du tableau reservations dans la collection place
       if (idPlace != null && idParking != null) {
         final placeDoc = await FirebaseFirestore.instance
-            .collection('placeU')
+            .collection('place')
             .doc(idPlace)
             .get();
 
@@ -86,7 +86,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
           }).toList();
 
           await FirebaseFirestore.instance
-              .collection('placeU')
+              .collection('place')
               .doc(idPlace)
               .update({'reservations': updatedReservations});
         }
@@ -129,7 +129,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('reservationU')
+            .collection('reservation')
             .where('userId', isEqualTo: userId)
             .snapshots(),
         builder: (context, snapshot) {

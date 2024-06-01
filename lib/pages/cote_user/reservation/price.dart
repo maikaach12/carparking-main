@@ -33,7 +33,7 @@ class _PrixPageState extends State<PrixPage> {
 
     // Récupérer le document de réservation à partir de l'idReservation
     final reservationDoc = await FirebaseFirestore.instance
-        .collection('reservationU')
+        .collection('reservation')
         .doc(widget.reservationId)
         .get();
 
@@ -52,7 +52,7 @@ class _PrixPageState extends State<PrixPage> {
 
       // Récupérer le document de place à partir de l'idPlace
       final placeDoc = await FirebaseFirestore.instance
-          .collection('placeU')
+          .collection('place')
           .doc(idPlace)
           .get();
 
@@ -107,7 +107,7 @@ class _PrixPageState extends State<PrixPage> {
 
           // Mettre à jour le prix dans le document de réservation
           await FirebaseFirestore.instance
-              .collection('reservationU')
+              .collection('reservation')
               .doc(widget.reservationId)
               .update({'prix': _prix});
         } else {

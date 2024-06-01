@@ -36,7 +36,7 @@ class _GererPlacePageState extends State<GererPlacePage> {
 
     // Try searching by place ID
     QuerySnapshot placeSnapshot = await _firestore
-        .collection('placeU')
+        .collection('place')
         .where(FieldPath.documentId, isEqualTo: searchQuery)
         .get();
 
@@ -54,7 +54,7 @@ class _GererPlacePageState extends State<GererPlacePage> {
       if (parkingSnapshot.docs.isNotEmpty) {
         String parkingId = parkingSnapshot.docs.first.id;
         QuerySnapshot placeSnapshotByParking = await _firestore
-            .collection('placeU')
+            .collection('place')
             .where('id_parking', isEqualTo: parkingId)
             .get();
         setState(() {
@@ -71,6 +71,8 @@ class _GererPlacePageState extends State<GererPlacePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors
+          .lightBlue[50], // Définit la couleur de l'arrière-plan en bleu clair
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -100,7 +102,7 @@ class _GererPlacePageState extends State<GererPlacePage> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('placeU').snapshots(),
+              stream: _firestore.collection('place').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   _snapshot = snapshot.data;
@@ -289,15 +291,15 @@ class _GererPlacePageState extends State<GererPlacePage> {
       'placesDisponible': newPlacesDisponibles,
     });
 
-    await _firestore.collection('placeU').doc(document.id).delete();
+    await _firestore.collection('place').doc(document.id).delete();
 
     QuerySnapshot reservations = await _firestore
-        .collection('reservationU')
+        .collection('reservation')
         .where('idPlace', isEqualTo: document.id)
         .get();
 
     for (DocumentSnapshot reservation in reservations.docs) {
-      await _firestore.collection('reservationU').doc(reservation.id).delete();
+      await _firestore.collection('reservation').doc(reservation.id).delete();
     }
   }
 }

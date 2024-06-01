@@ -7,7 +7,7 @@ class PlaceStatistics extends StatelessWidget {
 
   Future<int> _fetchPlaceCount() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('placeU').get();
+        await FirebaseFirestore.instance.collection('place').get();
     return querySnapshot.docs.length;
   }
 

@@ -131,7 +131,7 @@ class _ModifierPlacePageState extends State<ModifierPlacePage> {
   }
 
   Future<void> _updatePlace() async {
-    await _firestore.collection('placeU').doc(widget.document.id).update({
+    await _firestore.collection('place').doc(widget.document.id).update({
       'type': _selectedType,
     });
     Navigator.pop(context);
