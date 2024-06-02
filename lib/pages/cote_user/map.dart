@@ -4,6 +4,7 @@ import 'package:carparking/pages/cote_user/profilepage.dart';
 import 'package:carparking/pages/cote_user/reclamationuser.dart';
 import 'package:carparking/pages/cote_user/reservation/listeParking.dart';
 import 'package:carparking/pages/cote_user/reservation/reservation.dart';
+import 'package:carparking/pages/login_signup/firstPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -21,36 +22,32 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   late String _userId;
-  int _newNotifications =
-      0; // Variable to store the number of new notifications
+  int _newNotifications = 0;
 
   MapController _mapController = MapController();
   int _selectedIndex = 0;
   List<Marker> _markers = [];
-  LatLng _fixedLocation =
-      LatLng(36.75333078055549, 3.4708591109601565); // Fixed location
+  LatLng _fixedLocation = LatLng(36.75333078055549, 3.4708591109601565);
   List<LatLng> _routePoints = [];
   double _distance = 0.0;
   int _duration = 0;
   PolylineLayer? _routeLayer;
-  String _appBarTitle =
-      'Cliquer pour afficher tous les parkings'; // AppBar title
+  String?
+      _hoveredParkingName; // Variable to store the name of the hovered parking
 
   @override
   void initState() {
     super.initState();
     _fetchPlacesFromFirebase();
     _userId = widget.userId;
-    _getNewNotifications(); // Call method to get the number of new notifications
+    _getNewNotifications();
   }
 
-  // Method to get the number of new notifications
   void _getNewNotifications() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('notifications')
         .where('userId', isEqualTo: _userId)
-        .where('isRead',
-            isEqualTo: false) // Condition to get only unread notifications
+        .where('isRead', isEqualTo: false)
         .get();
     setState(() {
       _newNotifications = snapshot.docs.length;
@@ -65,7 +62,7 @@ class _MapPageState extends State<MapPage> {
     snapshot.docs.forEach((doc) {
       String name = doc['nom'];
       String place = doc['place'];
-      String parkingId = doc.id; // Get document ID
+      String parkingId = doc.id;
 
       GeoPoint position = doc['position'];
       LatLng latLng = LatLng(position.latitude, position.longitude);
@@ -75,14 +72,41 @@ class _MapPageState extends State<MapPage> {
           width: 80,
           height: 80,
           point: latLng,
-          child: GestureDetector(
-            onTap: () {
-              _showPlaceInfo(name, place, latLng, parkingId); // Pass parking ID
+          child: MouseRegion(
+            onEnter: (_) {
+              setState(() {
+                _hoveredParkingName = name;
+              });
             },
-            child: Icon(
-              Icons.location_on,
-              color: Color.fromARGB(255, 95, 87, 182),
-              size: 36,
+            onExit: (_) {
+              setState(() {
+                _hoveredParkingName = null;
+              });
+            },
+            child: GestureDetector(
+              onTap: () {
+                _showPlaceInfo(name, place, latLng, parkingId);
+              },
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Color.fromARGB(255, 95, 87, 182),
+                    size: 36,
+                  ),
+                  if (_hoveredParkingName == name)
+                    Container(
+                      color: Colors.white,
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -98,25 +122,20 @@ class _MapPageState extends State<MapPage> {
       String parkingId) async {
     _calculateRouteAndDrawLine(placeLatLng);
 
-    // Get parking document
     final parkingDoc = await FirebaseFirestore.instance
         .collection('parking')
         .doc(parkingId)
         .get();
 
-    // Check if document exists and has a placesDisponible value
     if (parkingDoc.exists &&
         parkingDoc.data()!.containsKey('placesDisponible')) {
       int placesDisponible = parkingDoc.data()!['placesDisponible'];
 
-      // Calculate distance
       double distance =
           calculateDistance(placeLatLng.latitude, placeLatLng.longitude);
 
-      // Update distance in Firestore
       await _updateParkingDistance(parkingId, distance);
 
-      // Calculate duration
       int duration = calculateDuration(distance);
 
       showModalBottomSheet(
@@ -124,7 +143,7 @@ class _MapPageState extends State<MapPage> {
         builder: (context) {
           final double distanceInKm = distance / 1000;
           final String address =
-              'Latitude: ${placeLatLng.latitude}, Longitude: ${placeLatLng.longitude}'; // Replace with a method to convert coordinates to address
+              'Latitude: ${placeLatLng.latitude}, Longitude: ${placeLatLng.longitude}';
 
           return Container(
             padding: EdgeInsets.all(16.0),
@@ -153,8 +172,7 @@ class _MapPageState extends State<MapPage> {
                       ),
                       child: Center(
                         child: Text(
-                          placesDisponible
-                              .toString(), // Display number of available spots
+                          placesDisponible.toString(),
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -239,7 +257,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   int calculateDuration(double distance) {
-    double averageSpeed = 50.0; // Average speed in km/h
+    double averageSpeed = 50.0;
     double distanceInKm = distance / 1000.0;
     double timeInHours = distanceInKm / averageSpeed;
     int timeInMinutes = (timeInHours * 60).round();
@@ -292,10 +310,30 @@ class _MapPageState extends State<MapPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_appBarTitle),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          'Car Parking',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.logout, color: Colors.black),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => FirstPage()),
+              (Route<dynamic> route) => false,
+            );
+          },
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.local_parking),
+            icon: Icon(Icons.local_parking, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
@@ -304,10 +342,21 @@ class _MapPageState extends State<MapPage> {
             },
           ),
           IconButton(
-            //   icon: Icon(Icons.notifications),
+            icon: Icon(Icons.report, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ReclamationPage(
+                          userId: _userId,
+                        )),
+              );
+            },
+          ),
+          IconButton(
             icon: Stack(
               children: [
-                Icon(Icons.notifications), // Notification icon
+                Icon(Icons.notifications, color: Colors.black),
                 if (_newNotifications > 0)
                   Positioned(
                     right: 0,
@@ -334,17 +383,15 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
             onPressed: () async {
-              // Navigate to NotificationPage and mark all notifications as read
               await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => NotificationPage(userId: _userId),
                 ),
               );
-              // After returning from NotificationPage, update the number of new notifications
               _getNewNotifications();
             },
-          )
+          ),
         ],
       ),
       body: Stack(
@@ -362,8 +409,7 @@ class _MapPageState extends State<MapPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'lib/images/blue.png'), // Replace with your background image path
+                image: AssetImage('lib/images/blue.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -419,7 +465,7 @@ class _MapPageState extends State<MapPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bookmark),
-            label: 'réservations',
+            label: 'Réservations',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -447,8 +493,7 @@ class _MapPageState extends State<MapPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ProfilePage(userId: _userId), // Replace with your profile page
+          builder: (context) => ProfilePage(userId: _userId),
         ),
       );
     }
