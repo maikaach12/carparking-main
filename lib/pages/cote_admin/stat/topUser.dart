@@ -9,7 +9,7 @@ class TopUserWidget extends StatelessWidget {
     try {
       // Fetching the reservation counts for each user
       QuerySnapshot reservationSnapshot =
-          await FirebaseFirestore.instance.collection('reservationU').get();
+          await FirebaseFirestore.instance.collection('reservation').get();
       Map<String, int> userReservationCounts = {};
 
       // Calculating the reservation count for each user

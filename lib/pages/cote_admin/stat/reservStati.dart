@@ -7,7 +7,7 @@ class ReservationStatistics extends StatelessWidget {
 
   Future<int> _fetchReservationCount() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('reservationU').get();
+        await FirebaseFirestore.instance.collection('reservation').get();
     return querySnapshot.docs.length;
   }
 

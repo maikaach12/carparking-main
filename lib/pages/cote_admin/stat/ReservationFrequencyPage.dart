@@ -11,7 +11,7 @@ class ReservationFrequencyPage extends StatefulWidget {
 
 class _ReservationFrequencyPageState extends State<ReservationFrequencyPage> {
   final CollectionReference<Object?> reservationsCollection =
-      FirebaseFirestore.instance.collection('reservationU');
+      FirebaseFirestore.instance.collection('reservation');
   String _granularity = 'Week'; // Default granularity
 
   @override

@@ -5,8 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class MesReservationsPage extends StatefulWidget {
-  MesReservationsPage();
-
   @override
   _MesReservationsPageState createState() => _MesReservationsPageState();
 }
@@ -193,12 +191,15 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    nomParking,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18.0,
+                                  Expanded(
+                                    child: Text(
+                                      nomParking,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   Text(
@@ -263,7 +264,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                       ),
                                       SizedBox(width: 4.0),
                                       Text(
-                                        reservation['matriculeEtMarque'],
+                                        reservation['matricule'],
                                         style: TextStyle(
                                           fontSize: 14.0,
                                           color: Colors.grey,

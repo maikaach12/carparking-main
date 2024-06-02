@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ReservationPage extends StatefulWidget {
   final String parkingId;
@@ -21,8 +22,9 @@ class _ReservationPageState extends State<ReservationPage> {
   Timestamp? _debutReservation;
   Timestamp? _finReservation;
   String _typePlace = 'standard';
+  String? _selectedMatricule;
+  List<String> _matricules = [];
   String? reservationId;
-  String _matriculeEtMarque = '';
   List<bool> _isSelected = [
     true,
     false
@@ -78,6 +80,19 @@ class _ReservationPageState extends State<ReservationPage> {
         });
       }
     }
+  }
+
+  Future<void> _fetchMatricules() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('matricule')
+          .where('userId', isEqualTo: userId)
+          .get();
+      _matricules =
+          querySnapshot.docs.map((doc) => doc.id).toList().cast<String>();
+    }
+    setState(() {});
   }
 
   Future<void> _selectFinReservation(BuildContext context) async {
@@ -209,7 +224,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 'idPlace': placesAttribueId,
                 'decrementPlacesDisponible': false,
                 'userId': userId,
-                'matriculeEtMarque': _matriculeEtMarque,
+                'matricule': _selectedMatricule
                 // Add user ID to reservation data
               }).then((documentRef) async {
                 reservationId = documentRef.id;
@@ -258,60 +273,168 @@ class _ReservationPageState extends State<ReservationPage> {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    return AlertDialog(
+                    return Dialog(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      title: Text(
-                        'Réservation effectuée',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      content: Text(
-                        'Votre réservation a été effectuée avec succès. La place attribuée est : $placesAttribueId \n\nPrix à payer : $prix DA',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'OK',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
+                      child: Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue.shade300,
+                              Colors.blue.shade600,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            // Navigate to MesReservationsPage
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MesReservationsPage(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                              size: 50,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Réservation effectuée',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                            );
-                          },
-                          child: Text(
-                            'Mes reservation',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
                             ),
-                          ),
+                            SizedBox(height: 20),
+                            Text(
+                              'La place attribuée est :',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.event_seat,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  placesAttribueId!,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.yellow.shade300,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 10.0,
+                                        color: Colors.black45,
+                                        offset: Offset(2.0, 2.0),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 30),
+                            Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.monetization_on,
+                                    color: Colors.green,
+                                    size: 32,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    '$prix DA',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    // Naviguer vers la page MesReservationsPage
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            MesReservationsPage(),
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(Icons.list),
+                                  label: Text(
+                                    'Mes réservations',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.blue.shade800,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  icon: Icon(Icons.done),
+                                  label: Text(
+                                    'OK',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     );
                   },
                 );
@@ -436,6 +559,8 @@ class _ReservationPageState extends State<ReservationPage> {
   @override
   void initState() {
     super.initState();
+    _fetchMatricules();
+
     Timer.periodic(Duration(minutes: 1), (timer) {
       _gererPlacesDisponibles();
     });
@@ -694,26 +819,29 @@ class _ReservationPageState extends State<ReservationPage> {
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10),
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Matricule et Marque (ex: 123543 - Peugeot 208)',
-                                      hintStyle: GoogleFonts.montserrat(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black.withOpacity(0.5),
-                                      ),
-                                      border: InputBorder.none,
-                                    ),
+                                  child: DropdownButtonFormField<String>(
+                                    value: _selectedMatricule,
                                     onChanged: (value) {
                                       setState(() {
-                                        _matriculeEtMarque = value;
+                                        _selectedMatricule = value;
                                       });
                                     },
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                    items: _matricules.isNotEmpty
+                                        ? _matricules.map((matriculeId) {
+                                            return DropdownMenuItem<String>(
+                                              value: matriculeId,
+                                              child: Text(matriculeId),
+                                            );
+                                          }).toList()
+                                        : [
+                                            DropdownMenuItem<String>(
+                                              value: null,
+                                              child: Text(
+                                                  'Aucune matricule disponible'),
+                                            ),
+                                          ],
+                                    decoration: InputDecoration(
+                                      labelText: 'Sélectionnez une matricule',
                                     ),
                                   ),
                                 ),
