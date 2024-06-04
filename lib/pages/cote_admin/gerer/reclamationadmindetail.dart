@@ -28,7 +28,7 @@ class _ReclamationDetailsPageState extends State<ReclamationDetailsPage> {
   }
 
   void _fetchUserIdFromMatricule() async {
-    String matricule = widget.reclamationData['véhicule'];
+    String matricule = widget.reclamationData['matricule'];
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
         .collection('véhicule')
         .doc(matricule)

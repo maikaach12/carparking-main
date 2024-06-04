@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBx1VsQFszSZJRxn8zFQM2Gs91zETN832c',
-    appId: '1:1086786709468:web:f4a6b155b16e048aab1119',
-    messagingSenderId: '1086786709468',
-    projectId: 'carpark-f0985',
-    authDomain: 'carpark-f0985.firebaseapp.com',
-    storageBucket: 'carpark-f0985.appspot.com',
-    measurementId: 'G-Y0WV3776EH',
+    apiKey: 'AIzaSyB9clSJ2K3_PaXWK0Dyt-A5ufwl1wMXY9U',
+    appId: '1:146509287944:web:fdf87c30147506c9a537bd',
+    messagingSenderId: '146509287944',
+    projectId: 'carparktwo-5feea',
+    authDomain: 'carparktwo-5feea.firebaseapp.com',
+    storageBucket: 'carparktwo-5feea.appspot.com',
+    measurementId: 'G-L7MLSXJ3EJ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBjRaQgp67eYlisAKlxgLZHhWv-oT0j9L4',
-    appId: '1:1086786709468:android:3291ab61a2b50bf6ab1119',
-    messagingSenderId: '1086786709468',
-    projectId: 'carpark-f0985',
-    storageBucket: 'carpark-f0985.appspot.com',
+    apiKey: 'AIzaSyBeKmyIeAVaHyRLcebWoq68cysyUSYm5vI',
+    appId: '1:146509287944:android:9d9ed261ec07cb4ca537bd',
+    messagingSenderId: '146509287944',
+    projectId: 'carparktwo-5feea',
+    storageBucket: 'carparktwo-5feea.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCXKTIyn_hz2Lr3-F-iTRzSCcNA-_UV2wQ',
-    appId: '1:1086786709468:ios:3ae1756ae88b5c1aab1119',
-    messagingSenderId: '1086786709468',
-    projectId: 'carpark-f0985',
-    storageBucket: 'carpark-f0985.appspot.com',
+    apiKey: 'AIzaSyBJLbLUlXmBElEL64JKaMoR5mc1boWX8lc',
+    appId: '1:146509287944:ios:c56b93e7cec1160ca537bd',
+    messagingSenderId: '146509287944',
+    projectId: 'carparktwo-5feea',
+    storageBucket: 'carparktwo-5feea.appspot.com',
     iosBundleId: 'com.example.carparking',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCXKTIyn_hz2Lr3-F-iTRzSCcNA-_UV2wQ',
-    appId: '1:1086786709468:ios:3ae1756ae88b5c1aab1119',
-    messagingSenderId: '1086786709468',
-    projectId: 'carpark-f0985',
-    storageBucket: 'carpark-f0985.appspot.com',
+    apiKey: 'AIzaSyBJLbLUlXmBElEL64JKaMoR5mc1boWX8lc',
+    appId: '1:146509287944:ios:c56b93e7cec1160ca537bd',
+    messagingSenderId: '146509287944',
+    projectId: 'carparktwo-5feea',
+    storageBucket: 'carparktwo-5feea.appspot.com',
     iosBundleId: 'com.example.carparking',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBx1VsQFszSZJRxn8zFQM2Gs91zETN832c',
-    appId: '1:1086786709468:web:42c6dec475d2d085ab1119',
-    messagingSenderId: '1086786709468',
-    projectId: 'carpark-f0985',
-    authDomain: 'carpark-f0985.firebaseapp.com',
-    storageBucket: 'carpark-f0985.appspot.com',
-    measurementId: 'G-WRPPR18ZRF',
+    apiKey: 'AIzaSyB9clSJ2K3_PaXWK0Dyt-A5ufwl1wMXY9U',
+    appId: '1:146509287944:web:ab8b03f4bd4af8eda537bd',
+    messagingSenderId: '146509287944',
+    projectId: 'carparktwo-5feea',
+    authDomain: 'carparktwo-5feea.firebaseapp.com',
+    storageBucket: 'carparktwo-5feea.appspot.com',
+    measurementId: 'G-53D5BBQ031',
   );
 }

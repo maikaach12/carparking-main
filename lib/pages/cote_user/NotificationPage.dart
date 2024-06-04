@@ -90,12 +90,18 @@ class _NotificationPageState extends State<NotificationPage> {
               final formattedTime =
                   DateFormat('dd/MM/yyyy HH:mm').format(timestamp.toDate());
 
+              // Sélectionner l'icône en fonction du type de notification
+              Icon notificationIcon = Icon(Icons.notifications);
+              if (type == 'Annulation de reservation') {
+                notificationIcon = Icon(Icons.cancel, color: Colors.red);
+              }
+
               return Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: Card(
-                  color: Colors.white,
-                  elevation: 4,
+                  color: Colors.grey.withOpacity(0.1), // Opacité 0.1
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
@@ -107,12 +113,9 @@ class _NotificationPageState extends State<NotificationPage> {
                           padding: EdgeInsets.all(8.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.blueGrey,
                           ),
-                          child: Icon(
-                            Icons.notifications,
-                            color: Colors.white,
-                          ),
+                          child:
+                              notificationIcon, // Utiliser l'icône sélectionnée
                         ),
                         title: Text(
                           type,

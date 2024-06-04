@@ -19,7 +19,11 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
   }
 
   String _getReservationStatus(
-      Timestamp debutTimestamp, Timestamp finTimestamp) {
+      Timestamp debutTimestamp, Timestamp finTimestamp, String etat) {
+    if (etat == 'Annulée') {
+      return 'Annulée';
+    }
+
     DateTime currentTime = DateTime.now();
     DateTime debutTime = debutTimestamp.toDate();
     DateTime finTime = finTimestamp.toDate();
@@ -30,14 +34,17 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
     } else if (currentTime.isAfter(finTime)) {
       return 'Terminé';
     } else {
-      return '';
+      return 'En cours';
     }
   }
 
   Future<void> _supprimerReservation(String reservationId) async {
     try {
       // Supprimer la réservation de Firestore
-      await _annulerReservation(reservationId, true);
+      await FirebaseFirestore.instance
+          .collection('reservation')
+          .doc(reservationId)
+          .delete();
 
       // Mettre à jour l'interface utilisateur en supprimant la réservation de la liste
       setState(() {});
@@ -46,67 +53,24 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
     }
   }
 
-  Future<void> _annulerReservation(String reservationId, bool supprimer) async {
-    // Obtenir les informations de la réservation à annuler
-    final reservationDoc = await FirebaseFirestore.instance
-        .collection('reservation')
-        .doc(reservationId)
-        .get();
-
-    if (reservationDoc.exists) {
-      // Récupérer l'ID de la place et l'ID du parking depuis le document de réservation
-      final idPlace = reservationDoc.data()?['idPlace'];
-      final idParking = reservationDoc.data()?['idParking'];
-
-      // Supprimer la réservation de la collection reservation
+  Future<void> _annulerReservation(String reservationId) async {
+    try {
       await FirebaseFirestore.instance
           .collection('reservation')
           .doc(reservationId)
-          .delete();
+          .update({'etat': 'Annulée'});
 
-      // Supprimer la réservation du tableau reservations dans la collection place
-      if (idPlace != null && idParking != null) {
-        final placeDoc = await FirebaseFirestore.instance
-            .collection('place')
-            .doc(idPlace)
-            .get();
+      // Afficher un message de confirmation d'annulation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Réservation annulée avec succès'),
+          duration: Duration(seconds: 2),
+        ),
+      );
 
-        if (placeDoc.exists) {
-          final reservations = placeDoc.data()?['reservations'] ?? [];
-          final updatedReservations = reservations.where((reservation) {
-            final debutReservation = reservation['debut'];
-            final finReservation = reservation['fin'];
-            final reservationDebut = reservationDoc.data()?['debut'];
-            final reservationFin = reservationDoc.data()?['fin'];
-
-            return !(debutReservation == reservationDebut &&
-                finReservation == reservationFin);
-          }).toList();
-
-          await FirebaseFirestore.instance
-              .collection('place')
-              .doc(idPlace)
-              .update({'reservations': updatedReservations});
-        }
-      }
-
-      if (supprimer) {
-        // Afficher un message de confirmation de suppression
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Réservation supprimée avec succès'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        // Afficher un message de confirmation d'annulation
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Réservation annulée avec succès'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
+      setState(() {}); // Mettre à jour l'interface utilisateur
+    } catch (e) {
+      print('Erreur lors de l\'annulation de la réservation : $e');
     }
   }
 
@@ -144,8 +108,9 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
               final debutTimestamp = reservation['debut'];
               final finTimestamp = reservation['fin'];
               final idParking = reservation['idParking'];
+              final etat = reservation['etat'];
               final reservationStatus =
-                  _getReservationStatus(debutTimestamp, finTimestamp);
+                  _getReservationStatus(debutTimestamp, finTimestamp, etat);
 
               // Récupérer le nom du parking à partir de l'ID
               return FutureBuilder<DocumentSnapshot>(
@@ -171,7 +136,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                     ),
                     child: Card(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0.0),
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
                       color: Colors.white,
                       child: Container(
@@ -207,7 +172,9 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                     style: TextStyle(
                                       color: reservationStatus == 'En cours'
                                           ? Colors.blue
-                                          : Colors.red,
+                                          : (reservationStatus == 'Annulée'
+                                              ? Colors.orange
+                                              : Colors.red),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -237,22 +204,42 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                               ),
                             ),
                             ListTile(
-                              title: Text(
-                                'Début: ${DateFormat('dd/MM/yyyy HH:mm').format(debutTimestamp.toDate())}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16.0,
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              title: Row(
                                 children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.blue,
+                                    size: 16.0,
+                                  ),
+                                  SizedBox(width: 4.0),
                                   Text(
-                                    'Fin: ${DateFormat('dd/MM/yyyy HH:mm').format(finTimestamp.toDate())}',
+                                    ' ${DateFormat('dd/MM/yyyy HH:mm').format(debutTimestamp.toDate())}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16.0,
                                     ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.timer_off,
+                                        color: Colors.red,
+                                        size: 16.0,
+                                      ),
+                                      SizedBox(width: 4.0),
+                                      Text(
+                                        ' ${DateFormat('dd/MM/yyyy HH:mm').format(finTimestamp.toDate())}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16.0,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   SizedBox(height: 4.0),
                                   Row(
@@ -279,7 +266,7 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.0),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
@@ -294,8 +281,12 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                         );
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color.fromRGBO(
-                                            25, 118, 210, 1),
+                                        backgroundColor:
+                                            Color.fromARGB(255, 97, 154, 210),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14.0),
+                                        ),
                                       ),
                                       child: Text(
                                         'Modifier',
@@ -305,12 +296,15 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                     SizedBox(width: 16.0),
                                     ElevatedButton(
                                       onPressed: () {
-                                        _annulerReservation(
-                                            reservation.id, false);
+                                        _annulerReservation(reservation.id);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                            Color.fromRGBO(25, 118, 210, 1),
+                                            Color.fromRGBO(55, 125, 196, 1),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14.0),
+                                        ),
                                       ),
                                       child: Text(
                                         'Annuler',
@@ -320,7 +314,8 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                   ],
                                 ),
                               ),
-                            if (reservationStatus == 'Terminé')
+                            if (reservationStatus == 'Annulée' ||
+                                reservationStatus == 'Terminé')
                               Align(
                                 alignment: Alignment.bottomRight,
                                 child: Padding(
@@ -330,7 +325,12 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                       _supprimerReservation(reservation.id);
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
+                                      backgroundColor:
+                                          Color.fromRGBO(55, 125, 196, 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(14.0),
+                                      ),
                                     ),
                                     child: Text(
                                       'Supprimer',

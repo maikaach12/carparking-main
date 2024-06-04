@@ -224,7 +224,8 @@ class _ReservationPageState extends State<ReservationPage> {
                 'idPlace': placesAttribueId,
                 'decrementPlacesDisponible': false,
                 'userId': userId,
-                'matricule': _selectedMatricule
+                'matricule': _selectedMatricule,
+                'etat': 'en cours'
                 // Add user ID to reservation data
               }).then((documentRef) async {
                 reservationId = documentRef.id;
@@ -511,6 +512,47 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
+  Future<void> _updateReservationStatus() async {
+    try {
+      // Récupérer l'heure actuelle
+      DateTime currentTime = DateTime.now().toUtc();
+      print('Heure actuelle: $currentTime');
+
+      // Interroger les réservations en cours
+      QuerySnapshot reservations = await FirebaseFirestore.instance
+          .collection('reservation')
+          .where('debut', isLessThanOrEqualTo: Timestamp.fromDate(currentTime))
+          .get();
+
+      for (QueryDocumentSnapshot reservation in reservations.docs) {
+        DateTime debutReservation = reservation.get('debut').toDate();
+        DateTime finReservation = reservation.get('fin').toDate();
+        String etatReservation = reservation.get('etat');
+
+        // Ignorer les réservations annulées
+        if (etatReservation == 'Annulée') {
+          continue;
+        }
+
+        // Afficher les heures de début et de fin de la réservation
+        print('Début de la réservation: $debutReservation');
+        print('Fin de la réservation: $finReservation');
+
+        // Mettre à jour l'état de la réservation
+        if (currentTime.isAfter(finReservation)) {
+          await reservation.reference.update({'etat': 'terminée'});
+          print('Mise à jour de la réservation ${reservation.id} à "terminée"');
+        } else if (currentTime.isAfter(debutReservation) &&
+            currentTime.isBefore(finReservation)) {
+          await reservation.reference.update({'etat': 'en cours'});
+          print('Mise à jour de la réservation ${reservation.id} à "en cours"');
+        }
+      }
+    } catch (e) {
+      print('Erreur lors de la mise à jour de l\'état des réservations: $e');
+    }
+  }
+
   Future<void> _gererPlacesDisponibles() async {
     try {
       // Obtenir l'heure actuelle
@@ -523,6 +565,10 @@ class _ReservationPageState extends State<ReservationPage> {
           .collection('reservation')
           .where('debut', isLessThanOrEqualTo: Timestamp.fromDate(currentTime))
           .where('fin', isGreaterThan: Timestamp.fromDate(currentTime))
+          .where('etat',
+              isNotEqualTo:
+                  'Annulée') // Exclure les réservations avec l'état "Annulée"
+
           .get();
 
       // Obtenir le nombre de réservations en cours
@@ -561,8 +607,9 @@ class _ReservationPageState extends State<ReservationPage> {
     super.initState();
     _fetchMatricules();
 
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    Timer.periodic(Duration(seconds: 1), (timer) {
       _gererPlacesDisponibles();
+      _updateReservationStatus();
     });
   }
 
