@@ -44,11 +44,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _updateEmail(String newEmail) async {
+    try {
+      // Update email in Firebase Authentication
+      await FirebaseAuth.instance.currentUser!
+          .verifyBeforeUpdateEmail(newEmail);
+
+      // Update email in Firestore's 'users' collection
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .update({'email': newEmail});
+
+      print('Email updated successfully');
+    } catch (e) {
+      print('Error updating email: $e');
+    }
+  }
+
   Future<void> fetchCarRegistrations() async {
     try {
       QuerySnapshot<Map<String, dynamic>> carDocs = await FirebaseFirestore
           .instance
-          .collection('matricule')
+          .collection('véhicule')
           .where('userId', isEqualTo: widget.userId)
           .get();
       List<String> registrations = carDocs.docs.map((doc) => doc.id).toList();
@@ -109,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     controller: controller,
                     style: GoogleFonts.poppins(fontSize: 16),
                     decoration: InputDecoration(
-                      hintText: 'Enter new value',
+                      hintText: 'Entrer une nouvelle valeur',
                       hintStyle: GoogleFonts.poppins(fontSize: 14),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -130,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: Text('Cancel'),
+                        child: Text('Annuler'),
                       ),
                       SizedBox(width: 8),
                       TextButton(
@@ -145,9 +163,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             userData![field] = controller.text;
                           });
                           updateUserData();
+                          if (field == 'email') {
+                            _updateEmail(controller.text);
+                          }
                           Navigator.of(context).pop();
                         },
-                        child: Text('Confirm'),
+                        child: Text('Confirmer'),
                       ),
                     ],
                   ),
@@ -240,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     controller: controller,
                     style: GoogleFonts.poppins(fontSize: 16),
                     decoration: InputDecoration(
-                      hintText: 'Enter car registration',
+                      hintText: 'Entrez matricule du véhicule',
                       hintStyle: GoogleFonts.poppins(fontSize: 14),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -274,7 +295,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         onPressed: () async {
                           if (controller.text.isNotEmpty) {
                             await FirebaseFirestore.instance
-                                .collection('matricule')
+                                .collection('véhicule')
                                 .doc(controller.text)
                                 .set({
                               'userId': widget.userId,
@@ -283,7 +304,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           }
                           Navigator.of(context).pop();
                         },
-                        child: Text('Add'),
+                        child: Text('Ajouter'),
                       ),
                     ],
                   ),
@@ -302,6 +323,23 @@ class _ProfilePageState extends State<ProfilePage> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          'Mes informations',
+          style: GoogleFonts.montserrat(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           Positioned(
@@ -331,7 +369,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(height: 50),
                           userData == null
                               ? Center(child: CircularProgressIndicator())
                               : Padding(
@@ -348,10 +385,30 @@ class _ProfilePageState extends State<ProfilePage> {
                                           children: [
                                             Row(
                                               children: [
+                                                Icon(Icons.family_restroom),
+                                                SizedBox(width: 5),
+                                                Text(
+                                                    'Nom: ${userData!['familyName']}'),
+                                              ],
+                                            ),
+                                            IconButton(
+                                              icon: Icon(Icons.edit),
+                                              onPressed: () =>
+                                                  _showEditDialog('familyName'),
+                                            ),
+                                          ],
+                                        ),
+                                        Divider(),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
                                                 Icon(Icons.person),
                                                 SizedBox(width: 5),
                                                 Text(
-                                                    'Name: ${userData!['name']}'),
+                                                    'Prénom: ${userData!['name']}'),
                                               ],
                                             ),
                                             IconButton(
@@ -388,30 +445,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                           children: [
                                             Row(
                                               children: [
-                                                Icon(Icons.family_restroom),
-                                                SizedBox(width: 5),
-                                                Text(
-                                                    'Family Name: ${userData!['familyName']}'),
-                                              ],
-                                            ),
-                                            IconButton(
-                                              icon: Icon(Icons.edit),
-                                              onPressed: () =>
-                                                  _showEditDialog('familyName'),
-                                            ),
-                                          ],
-                                        ),
-                                        Divider(),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
                                                 Icon(Icons.phone),
                                                 SizedBox(width: 5),
                                                 Text(
-                                                    'Phone Number: ${userData!['phoneNumber']}'),
+                                                    'Numéro de téléphone: ${userData!['phoneNumber']}'),
                                               ],
                                             ),
                                             IconButton(
@@ -431,7 +468,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 Icon(Icons.credit_card),
                                                 SizedBox(width: 5),
                                                 Text(
-                                                    'ID Card: ${userData!['idCard']}'),
+                                                  'Carte d\'identité: ${userData!['idCard']}',
+                                                ),
                                               ],
                                             ),
                                             IconButton(
@@ -463,63 +501,76 @@ class _ProfilePageState extends State<ProfilePage> {
                                           ],
                                         ),
                                         Divider(),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .center, // Alignement vertical au centre
                                           children: [
-                                            Text(
-                                              'Car Registrations:',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(height: 8),
-                                            for (var carRegistration
-                                                in carRegistrations)
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(carRegistration),
-                                                ],
-                                              ),
-                                            SizedBox(height: 16),
-                                            ElevatedButton.icon(
-                                              style: ElevatedButton.styleFrom(
-                                                foregroundColor: Colors.black,
-                                                backgroundColor: Colors.blue,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Matricule du véhicule:',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 32,
-                                                    vertical: 16),
-                                              ),
-                                              icon: Icon(
-                                                Icons.add,
-                                                color: Colors.white,
-                                              ),
-                                              onPressed: _showAddCarDialog,
-                                              label: Text(
-                                                'Add Car Registration',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
+                                                SizedBox(
+                                                    width:
+                                                        128), // Ajouter un peu d'espacement entre le texte et l'icône
+                                                FloatingActionButton(
+                                                  onPressed: _showAddCarDialog,
+                                                  child: Icon(Icons.add,
+                                                      color: Colors.white),
+                                                  backgroundColor:
+                                                      const Color.fromARGB(
+                                                          255, 212, 227, 240),
+                                                  mini: true,
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                           ],
                                         ),
+                                        SizedBox(height: 8),
+                                        for (var carRegistration
+                                            in carRegistrations)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(Icons
+                                                      .car_rental), // Icône de voiture
+                                                  SizedBox(width: 8),
+                                                  Text(carRegistration),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(Icons.edit),
+                                                    onPressed: () =>
+                                                        _showEditCarDialog(
+                                                            carRegistration), // Modifier l'immatriculation
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(Icons.delete),
+                                                    onPressed: () =>
+                                                        _deleteCarRegistration(
+                                                            carRegistration), // Supprimer l'immatriculation
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         Divider(),
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text('Deactivate Account'),
+                                            Text('Désactiver le compte'),
                                             Switch(
                                               value: userData![
                                                       'desactiveparmoi'] ??
@@ -555,7 +606,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                     .min,
                                                             children: [
                                                               Text(
-                                                                'Confirm Account Deactivation',
+                                                                'Confirmer la désactivation du compte',
                                                                 style:
                                                                     GoogleFonts
                                                                         .poppins(
@@ -568,7 +619,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                               SizedBox(
                                                                   height: 16),
                                                               Text(
-                                                                'Are you sure you want to deactivate your account?',
+                                                                'Êtes-vous sûr de vouloir désactiver votre compte ?',
                                                                 style:
                                                                     GoogleFonts
                                                                         .poppins(
@@ -596,7 +647,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                       ),
                                                                     ),
                                                                     child: Text(
-                                                                        'Cancel'),
+                                                                        'Annuler'),
                                                                     onPressed: () =>
                                                                         Navigator.of(context)
                                                                             .pop(false),
@@ -617,7 +668,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                       ),
                                                                     ),
                                                                     child: Text(
-                                                                        'Confirm'),
+                                                                        'Confirmer'),
                                                                     onPressed: () =>
                                                                         Navigator.of(context)
                                                                             .pop(true),
@@ -656,40 +707,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ],
                                         ),
-                                        SizedBox(height: 20),
-                                        ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            foregroundColor: Colors.black,
-                                            backgroundColor: Colors.grey[200],
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 32, vertical: 16),
-                                          ),
-                                          icon: Icon(
-                                            Icons.logout,
-                                            color: Colors.black,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    LoginPage(),
-                                              ),
-                                            );
-                                          },
-                                          label: Text(
-                                            'Logout',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -705,5 +722,168 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  void _showEditCarDialog(String carRegistration) {
+    TextEditingController controller =
+        TextEditingController(text: carRegistration);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: controller,
+                    style: GoogleFonts.poppins(fontSize: 16),
+                    decoration: InputDecoration(
+                      hintText: 'Modifier matricule',
+                      hintStyle: GoogleFonts.poppins(fontSize: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.blue,
+                          textStyle: GoogleFonts.poppins(
+                            fontSize: 16,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Annuler'),
+                      ),
+                      SizedBox(width: 8),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.blue,
+                          textStyle: GoogleFonts.poppins(
+                            fontSize: 16,
+                          ),
+                        ),
+                        onPressed: () async {
+                          if (controller.text.isNotEmpty) {
+                            await FirebaseFirestore.instance
+                                .collection('véhicule')
+                                .doc(carRegistration)
+                                .delete();
+                            await FirebaseFirestore.instance
+                                .collection('véhicule')
+                                .doc(controller.text)
+                                .set({
+                              'userId': widget.userId,
+                            });
+                            fetchCarRegistrations();
+                          }
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Modifier'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteCarRegistration(String carRegistration) async {
+    bool confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Row(
+                        children: [
+                          SizedBox(width: 8),
+                          Text(
+                            'Confirmer la suppression',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Voulez-vous vraiment supprimer cette immatriculation ?',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.blue,
+                              textStyle: GoogleFonts.poppins(
+                                fontSize: 16,
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text('Annuler'),
+                          ),
+                          SizedBox(width: 8),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.blue,
+                              textStyle: GoogleFonts.poppins(
+                                fontSize: 16,
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text('Supprimer'),
+                          ),
+                        ],
+                      )
+                    ]))));
+      },
+    );
+
+    if (confirmed) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('véhicule')
+            .doc(carRegistration)
+            .delete();
+        fetchCarRegistrations();
+      } catch (e) {
+        print('Error deleting car registration: $e');
+      }
+    }
   }
 }

@@ -56,7 +56,7 @@ class TopUserWidget extends StatelessWidget {
           return Center(
             child: SpinKitCircle(
               color: Colors.pink,
-              size: 16.0,
+              size: 50.0,
             ),
           );
         } else if (snapshot.hasError) {
@@ -68,17 +68,24 @@ class TopUserWidget extends StatelessWidget {
           String topUserName = snapshot.data?['name'] ?? '';
           int topUserReservations = snapshot.data?['reservations'] ?? 0;
           return Container(
-            margin: EdgeInsets.all(8),
-            padding: EdgeInsets.all(12),
+            margin: EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue.shade300,
+                  Color.fromARGB(255, 157, 207, 225)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: Offset(0, 2), // changes position of shadow
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 4,
+                  blurRadius: 8,
+                  offset: Offset(0, 4), // changes position of shadow
                 ),
               ],
             ),
@@ -86,46 +93,46 @@ class TopUserWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Top User',
+                  'Conducteur VIP',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CircleAvatar(
-                      radius: 20,
-                      backgroundImage:
-                          AssetImage('assets/images/user_avatar.png'),
+                      radius: 30,
+                      backgroundImage: AssetImage('lib/images/avatar.png'),
                     ),
+                    SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           topUserName,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         Text(
                           '$topUserReservations Reservations',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[700],
+                            fontSize: 14,
+                            color: Colors.white70,
                           ),
                         ),
                       ],
                     ),
+                    Spacer(),
                     Icon(
                       Icons.star,
                       color: Colors.yellow,
-                      size: 24,
+                      size: 30,
                     ),
                   ],
                 ),

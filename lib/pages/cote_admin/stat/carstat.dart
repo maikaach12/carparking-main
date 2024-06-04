@@ -7,7 +7,7 @@ class CarStatistics extends StatelessWidget {
 
   Future<int> _fetchCarCount() async {
     QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('matricule').get();
+        await FirebaseFirestore.instance.collection('véhicule').get();
     return querySnapshot.docs.length;
   }
 

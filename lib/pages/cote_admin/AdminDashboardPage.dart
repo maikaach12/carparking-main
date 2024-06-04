@@ -46,7 +46,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       MaterialPageRoute(
         builder: (context) => Chart(
           reservationsCollection:
-              FirebaseFirestore.instance.collection('reservationU'),
+              FirebaseFirestore.instance.collection('reservation'),
         ),
       ),
     );
@@ -55,150 +55,117 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Row(
         children: [
-          Row(
-            children: [
-              AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                width: _showSidebar ? 250 : 0,
-                child: Drawer(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      UserAccountsDrawerHeader(
-                        accountName: Text(widget.userEmail),
-                        accountEmail: Text(widget.userId),
-                        currentAccountPicture: CircleAvatar(
-                          child: Icon(
-                            Icons.person,
-                            size: 40,
-                          ),
-                          backgroundColor: Colors.white,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                        ),
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            width: _showSidebar ? 250 : 0,
+            child: Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  UserAccountsDrawerHeader(
+                    accountName: Text(widget.userEmail),
+                    accountEmail: Text(widget.userId),
+                    currentAccountPicture: CircleAvatar(
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
                       ),
-                      ListTile(
-                        leading: Icon(Icons.person),
-                        title: Text('Gérer Compte'),
-                        onTap: () {
-                          _navigateToPage(context, ManageAccountsPage());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.local_parking),
-                        title: Text('Gérer Parking'),
-                        onTap: () {
-                          _navigateToPage(context, GererParkingPage());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.error),
-                        title: Text('Gérer Réclamation'),
-                        onTap: () {
-                          _navigateToPage(context, ReclamationAdminPage());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.place),
-                        title: Text('Gérer Place'),
-                        onTap: () {
-                          _navigateToPage(context, GererPlacePage());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.book),
-                        title: Text('Réservation'),
-                        onTap: () {
-                          _navigateToPage(context, reservationPage());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.bar_chart),
-                        title: Text('Reclamation Statistics'),
-                        onTap: () {
-                          _navigateToPage(context, ReclamationStatistics());
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    Navbar(
-                      onMenuTap: () {
-                        setState(() {
-                          _showSidebar = !_showSidebar;
-                        });
-                      },
-                      onHomeTap: () {
-                        setState(() {
-                          _currentPage = ParkingListView(
-                            parkingsCollection: FirebaseFirestore.instance
-                                .collection('parking'),
-                          );
-                        });
-                      },
-                      onStatisticsTap: () =>
-                          _navigateToReservationFrequencyPage(context),
+                      backgroundColor: Colors.white,
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    title: Text('Gérer Compte'),
+                    onTap: () {
+                      _navigateToPage(context, ManageAccountsPage());
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.local_parking),
+                    title: Text('Gérer Parking'),
+                    onTap: () {
+                      _navigateToPage(context, GererParkingPage());
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.error),
+                    title: Text('Gérer Réclamation'),
+                    onTap: () {
+                      _navigateToPage(context, ReclamationAdminPage());
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.place),
+                    title: Text('Gérer Place'),
+                    onTap: () {
+                      _navigateToPage(context, GererPlacePage());
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.book),
+                    title: Text('Réservation'),
+                    onTap: () {
+                      _navigateToPage(context, reservationPage());
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                Navbar(
+                  onMenuTap: () {
+                    setState(() {
+                      _showSidebar = !_showSidebar;
+                    });
+                  },
+                  onHomeTap: () {
+                    setState(() {
+                      _currentPage = ParkingListView(
+                        parkingsCollection:
+                            FirebaseFirestore.instance.collection('parking'),
+                      );
+                    });
+                  },
+                  onStatisticsTap: () =>
+                      _navigateToReservationFrequencyPage(context),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: TopUserWidget(),
+                        ),
+                        Wrap(
+                          spacing: 10.0,
+                          runSpacing: 10.0,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: TopUserWidget(),
-                            ),
-                            Wrap(
-                              spacing: 10.0,
-                              runSpacing: 10.0,
-                              children: [
-                                UserStatistics(),
-                                ReclamationStatistics(),
-                                PlaceStatistics(),
-                                CarStatistics(),
-                                ParkingStatistics(),
-                                ReservationStatistics(),
-                              ],
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              child: _currentPage,
-                            ),
+                            UserStatistics(),
+                            ReclamationStatistics(),
+                            PlaceStatistics(),
+                            CarStatistics(),
+                            ParkingStatistics(),
+                            ReservationStatistics(),
                           ],
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          child: _currentPage,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: 0,
-            child: MouseRegion(
-              opaque: false,
-              onHover: (_) {
-                setState(() {
-                  _showSidebar = true;
-                });
-              },
-              onExit: (_) {
-                setState(() {
-                  _showSidebar = false;
-                });
-              },
-              child: Container(
-                width: 10,
-                color: Colors.transparent,
-              ),
+              ],
             ),
           ),
         ],

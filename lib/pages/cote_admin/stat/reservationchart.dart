@@ -11,7 +11,7 @@ class Chart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reservation Statistics'),
+        title: Text(' Statistiques'),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: reservationsCollection.snapshots(),
@@ -24,10 +24,34 @@ class Chart extends StatelessWidget {
               snapshot.data!.docs.map((doc) => doc.data()).toList();
           final reservationData = groupReservationsByHour(reservations);
 
-          return Column(
-            children: [
-              HourlyReservationChart(reservationData: reservationData),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Statistiques de Réservation',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade700, // Light blue color for title
+                    ),
+                  ),
+                ),
+                HourlyReservationChart(reservationData: reservationData),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Statistiques de Reclamation',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade700, // Light blue color for title
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -64,11 +88,11 @@ class HourlyReservationChart extends StatelessWidget {
         LineChartBarData(
           spots: spots,
           isCurved: true,
-          color: Color.fromARGB(255, 32, 192, 128), // Trendier color
+          color: Colors.lightBlue, // Light blue color for the line
           barWidth: 2, // Line width
           belowBarData: BarAreaData(
             show: true,
-            color: Color.fromARGB(50, 32, 192, 128), // Area color
+            color: Colors.lightBlue.withOpacity(0.2), // Light blue area color
           ),
           dotData: FlDotData(show: false),
         ),
@@ -82,7 +106,7 @@ class HourlyReservationChart extends StatelessWidget {
               return Text(
                 '${value.toInt()}h',
                 style: TextStyle(
-                  color: Colors.grey.shade700, // Trendier color
+                  color: Colors.grey.shade700, // Light blue color
                   fontSize: 8, // Smaller font size
                 ),
               );
@@ -99,7 +123,7 @@ class HourlyReservationChart extends StatelessWidget {
         horizontalInterval: 1,
         getDrawingHorizontalLine: (value) {
           return FlLine(
-            color: Colors.grey.withOpacity(0.2), // Trendier grid line color
+            color: Colors.grey.withOpacity(0.2), // Light blue grid line color
             strokeWidth: 0.2, // Thinner grid line
           );
         },

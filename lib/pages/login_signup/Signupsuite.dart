@@ -98,7 +98,7 @@ class _SignUpDetailsPageState extends State<SignUpDetailsPage> {
     try {
       for (var controller in carRegistrationControllers) {
         await FirebaseFirestore.instance
-            .collection('matricule')
+            .collection('véhicule')
             .doc(controller.text)
             .set({'userId': userId});
       }

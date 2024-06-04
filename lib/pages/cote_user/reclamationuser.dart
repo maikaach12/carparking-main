@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:carparking/pages/cote_user/reclamlist.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ReclamationPage extends StatefulWidget {
   final String userId;
@@ -96,7 +97,7 @@ class _ReclamationPageState extends State<ReclamationPage> {
     List<String> matricules = [];
     QuerySnapshot<Map<String, dynamic>> snapshot =
         await FirebaseFirestore.instance
-            .collection('matricule')
+            .collection('véhicule')
             //.where('userId', isEqualTo: userId)
             .get();
 
@@ -152,6 +153,23 @@ class _ReclamationPageState extends State<ReclamationPage> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          'Reclamation',
+          style: GoogleFonts.montserrat(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           Positioned(
@@ -165,410 +183,394 @@ class _ReclamationPageState extends State<ReclamationPage> {
             child: bottomWidget(screenWidth),
           ),
           Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('lib/images/blue.png'),
-                fit: BoxFit.cover,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('lib/images/blue.png'),
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 13, vertical: 3),
-            child: Center(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                children: [
-                  SingleChildScrollView(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 250, 248, 248),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      padding: EdgeInsets.all(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '1. Sélectionnez le type de réclamation',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+              padding: EdgeInsets.symmetric(horizontal: 13, vertical: 3),
+              child: Center(
+                child: Column(children: [
+                  SizedBox(height: 40), // Space for status bar
+
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      children: [
+                        SingleChildScrollView(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color.fromARGB(255, 250, 248, 248),
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            SizedBox(height: 16),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
+                            padding: EdgeInsets.all(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '1. Sélectionnez le type de réclamation',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  border: InputBorder.none,
-                                ),
-                                value: selectedTypeProblem,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedTypeProblem = value;
-                                    selectedDescription = null;
-                                    otherDescription = null;
-                                  });
-                                },
-                                items: typeProblemDescriptions.keys.map((type) {
-                                  return DropdownMenuItem<String>(
-                                    value: type,
-                                    child: Text(type),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            AnimatedOpacity(
-                              opacity: selectedTypeProblem != null ? 1.0 : 0.0,
-                              duration: Duration(milliseconds: 300),
-                              child: selectedTypeProblem != null
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '2. Sélectionnez une description',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                  SizedBox(height: 16),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 8,
                                         ),
-                                        SizedBox(height: 8),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                          child:
-                                              DropdownButtonFormField<String>(
-                                            decoration: InputDecoration(
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                                vertical: 8,
-                                              ),
-                                              border: InputBorder.none,
-                                            ),
-                                            value: selectedDescription,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                selectedDescription = value;
-                                                otherDescription = null;
-                                              });
-                                            },
-                                            items: typeProblemDescriptions[
-                                                    selectedTypeProblem]!
-                                                .map((description) {
-                                              return DropdownMenuItem<String>(
-                                                value: description,
-                                                child: Text(description),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                        SizedBox(height: 16),
-                                        if (selectedDescription == null)
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              border: Border.all(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            child: TextField(
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  otherDescription = value;
-                                                });
-                                              },
-                                              decoration: InputDecoration(
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: 8,
+                                        border: InputBorder.none,
+                                      ),
+                                      value: selectedTypeProblem,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedTypeProblem = value;
+                                          selectedDescription = null;
+                                          otherDescription = null;
+                                        });
+                                      },
+                                      items: typeProblemDescriptions.keys
+                                          .map((type) {
+                                        return DropdownMenuItem<String>(
+                                          value: type,
+                                          child: Text(type),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  AnimatedOpacity(
+                                    opacity:
+                                        selectedTypeProblem != null ? 1.0 : 0.0,
+                                    duration: Duration(milliseconds: 300),
+                                    child: selectedTypeProblem != null
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '2. Sélectionnez une description',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                                hintText:
-                                                    'Entrez une description personnalisée',
-                                                border: InputBorder.none,
                                               ),
-                                            ),
-                                          ),
-                                        SizedBox(height: 16),
-                                        AnimatedOpacity(
-                                          opacity: selectedTypeProblem ==
-                                                  'Place réservée non disponible'
-                                              ? 1.0
-                                              : 0.0,
-                                          duration: Duration(milliseconds: 300),
-                                          child: selectedTypeProblem ==
-                                                  'Place réservée non disponible'
-                                              ? Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      '3. Sélectionnez une réservation',
-                                                      style: TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
+                                              SizedBox(height: 8),
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                                child: DropdownButtonFormField<
+                                                    String>(
+                                                  decoration: InputDecoration(
+                                                    contentPadding:
+                                                        EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 8,
                                                     ),
-                                                    SizedBox(height: 8),
-                                                    FutureBuilder<List<String>>(
-                                                      future:
-                                                          getReservationsForUser(
-                                                              widget.userId),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        if (snapshot
-                                                                .connectionState ==
-                                                            ConnectionState
-                                                                .waiting) {
-                                                          return CircularProgressIndicator();
-                                                        } else if (snapshot
-                                                            .hasError) {
-                                                          return Text(
-                                                              'Erreur: ${snapshot.error}');
-                                                        } else {
-                                                          List<String>?
-                                                              reservations =
-                                                              snapshot.data;
-                                                          return Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              10),
-                                                                  border: Border
-                                                                      .all(
-                                                                    color: Colors
-                                                                        .grey,
-                                                                  ),
-                                                                ),
-                                                                child:
-                                                                    DropdownButtonFormField<
-                                                                        String>(
-                                                                  decoration:
-                                                                      InputDecoration(
-                                                                    contentPadding:
-                                                                        EdgeInsets
-                                                                            .symmetric(
-                                                                      horizontal:
-                                                                          16,
-                                                                      vertical:
-                                                                          8,
-                                                                    ),
-                                                                    border:
-                                                                        InputBorder
-                                                                            .none,
-                                                                  ),
-                                                                  value:
-                                                                      selectedReservation,
-                                                                  onChanged:
-                                                                      (value) {
-                                                                    setState(
-                                                                        () {
-                                                                      selectedReservation =
-                                                                          value;
-                                                                    });
-                                                                  },
-                                                                  items: reservations
-                                                                          ?.map(
-                                                                              (reservation) {
-                                                                        return DropdownMenuItem<
-                                                                            String>(
-                                                                          value:
-                                                                              reservation,
-                                                                          child:
-                                                                              Text(reservation),
-                                                                        );
-                                                                      }).toList() ??
-                                                                      [],
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                  height: 16),
-                                                              if (selectedReservation !=
-                                                                  null)
-                                                                Column(
+                                                    border: InputBorder.none,
+                                                  ),
+                                                  value: selectedDescription,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      selectedDescription =
+                                                          value;
+                                                      otherDescription = null;
+                                                    });
+                                                  },
+                                                  items: typeProblemDescriptions[
+                                                          selectedTypeProblem]!
+                                                      .map((description) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: description,
+                                                      child: Text(description),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                              SizedBox(height: 16),
+                                              if (selectedDescription == null)
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    border: Border.all(
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                  child: TextField(
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        otherDescription =
+                                                            value;
+                                                      });
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      contentPadding:
+                                                          EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 8,
+                                                      ),
+                                                      hintText:
+                                                          'Entrez une description personnalisée',
+                                                      border: InputBorder.none,
+                                                    ),
+                                                  ),
+                                                ),
+                                              SizedBox(height: 16),
+                                              AnimatedOpacity(
+                                                opacity: selectedTypeProblem ==
+                                                        'Place réservée non disponible'
+                                                    ? 1.0
+                                                    : 0.0,
+                                                duration:
+                                                    Duration(milliseconds: 300),
+                                                child: selectedTypeProblem ==
+                                                        'Place réservée non disponible'
+                                                    ? Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            '3. Sélectionnez une réservation',
+                                                            style: TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 8),
+                                                          FutureBuilder<
+                                                              List<String>>(
+                                                            future:
+                                                                getReservationsForUser(
+                                                                    widget
+                                                                        .userId),
+                                                            builder: (context,
+                                                                snapshot) {
+                                                              if (snapshot
+                                                                      .connectionState ==
+                                                                  ConnectionState
+                                                                      .waiting) {
+                                                                return CircularProgressIndicator();
+                                                              } else if (snapshot
+                                                                  .hasError) {
+                                                                return Text(
+                                                                    'Erreur: ${snapshot.error}');
+                                                              } else {
+                                                                List<String>?
+                                                                    reservations =
+                                                                    snapshot
+                                                                        .data;
+                                                                return Column(
                                                                   crossAxisAlignment:
                                                                       CrossAxisAlignment
                                                                           .start,
                                                                   children: [
-                                                                    FutureBuilder<
-                                                                        String>(
-                                                                      future: getPlaceNumberFromReservation(
-                                                                          selectedReservation!),
-                                                                      builder:
-                                                                          (context,
-                                                                              snapshot) {
-                                                                        if (snapshot.connectionState ==
-                                                                            ConnectionState
-                                                                                .waiting) {
-                                                                          return CircularProgressIndicator();
-                                                                        } else if (snapshot
-                                                                            .hasError) {
-                                                                          return Text(
-                                                                              'Erreur: ${snapshot.error}');
-                                                                        } else {
-                                                                          String
-                                                                              placeNumber =
-                                                                              snapshot.data!;
-                                                                          return Text(
-                                                                            'ID de la place : $placeNumber',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize: 16,
-                                                                              color: Colors.red,
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                      },
-                                                                    ),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            16),
-                                                                    Text(
-                                                                      '4. Sélectionnez une matricule',
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            18,
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
+                                                                    Container(
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(10),
+                                                                        border:
+                                                                            Border.all(
+                                                                          color:
+                                                                              Colors.grey,
+                                                                        ),
+                                                                      ),
+                                                                      child: DropdownButtonFormField<
+                                                                          String>(
+                                                                        decoration:
+                                                                            InputDecoration(
+                                                                          contentPadding:
+                                                                              EdgeInsets.symmetric(
+                                                                            horizontal:
+                                                                                16,
+                                                                            vertical:
+                                                                                8,
+                                                                          ),
+                                                                          border:
+                                                                              InputBorder.none,
+                                                                        ),
+                                                                        value:
+                                                                            selectedReservation,
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          setState(
+                                                                              () {
+                                                                            selectedReservation =
+                                                                                value;
+                                                                          });
+                                                                        },
+                                                                        items: reservations?.map((reservation) {
+                                                                              return DropdownMenuItem<String>(
+                                                                                value: reservation,
+                                                                                child: Text(reservation),
+                                                                              );
+                                                                            }).toList() ??
+                                                                            [],
                                                                       ),
                                                                     ),
                                                                     SizedBox(
                                                                         height:
-                                                                            8),
-                                                                    FutureBuilder<
-                                                                        List<
-                                                                            String>>(
-                                                                      future: getMatriculesForUser(
-                                                                          widget
-                                                                              .userId),
-                                                                      builder:
-                                                                          (context,
-                                                                              snapshot) {
-                                                                        if (snapshot.connectionState ==
-                                                                            ConnectionState
-                                                                                .waiting) {
-                                                                          return CircularProgressIndicator();
-                                                                        } else if (snapshot
-                                                                            .hasError) {
-                                                                          return Text(
-                                                                              'Erreur: ${snapshot.error}');
-                                                                        } else {
-                                                                          List<String>?
-                                                                              matricules =
-                                                                              snapshot.data;
-                                                                          return Container(
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              borderRadius: BorderRadius.circular(10),
-                                                                              border: Border.all(
-                                                                                color: Colors.grey,
-                                                                              ),
+                                                                            16),
+                                                                    if (selectedReservation !=
+                                                                        null)
+                                                                      Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          FutureBuilder<
+                                                                              String>(
+                                                                            future:
+                                                                                getPlaceNumberFromReservation(selectedReservation!),
+                                                                            builder:
+                                                                                (context, snapshot) {
+                                                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                                                return CircularProgressIndicator();
+                                                                              } else if (snapshot.hasError) {
+                                                                                return Text('Erreur: ${snapshot.error}');
+                                                                              } else {
+                                                                                String placeNumber = snapshot.data!;
+                                                                                return Text(
+                                                                                  'ID de la place : $placeNumber',
+                                                                                  style: TextStyle(
+                                                                                    fontSize: 16,
+                                                                                    color: Colors.red,
+                                                                                  ),
+                                                                                );
+                                                                              }
+                                                                            },
+                                                                          ),
+                                                                          SizedBox(
+                                                                              height: 16),
+                                                                          Text(
+                                                                            '4. Sélectionnez une matricule',
+                                                                            style:
+                                                                                TextStyle(
+                                                                              fontSize: 18,
+                                                                              fontWeight: FontWeight.bold,
                                                                             ),
-                                                                            child:
-                                                                                DropdownButtonFormField<String>(
-                                                                              decoration: InputDecoration(
-                                                                                contentPadding: EdgeInsets.symmetric(
-                                                                                  horizontal: 16,
-                                                                                  vertical: 8,
-                                                                                ),
-                                                                                border: InputBorder.none,
-                                                                              ),
-                                                                              value: selectedMatricule,
-                                                                              onChanged: (value) {
-                                                                                setState(() {
-                                                                                  selectedMatricule = value;
-                                                                                });
-                                                                              },
-                                                                              items: matricules?.map((matricule) {
-                                                                                    return DropdownMenuItem<String>(
-                                                                                      value: matricule,
-                                                                                      child: Text(matricule),
-                                                                                    );
-                                                                                  }).toList() ??
-                                                                                  [],
-                                                                            ),
-                                                                          );
-                                                                        }
-                                                                      },
-                                                                    ),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            8),
+                                                                          ),
+                                                                          SizedBox(
+                                                                              height: 8),
+                                                                          FutureBuilder<
+                                                                              List<String>>(
+                                                                            future:
+                                                                                getMatriculesForUser(widget.userId),
+                                                                            builder:
+                                                                                (context, snapshot) {
+                                                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                                                return CircularProgressIndicator();
+                                                                              } else if (snapshot.hasError) {
+                                                                                return Text('Erreur: ${snapshot.error}');
+                                                                              } else {
+                                                                                List<String>? matricules = snapshot.data;
+                                                                                return Container(
+                                                                                  decoration: BoxDecoration(
+                                                                                    borderRadius: BorderRadius.circular(10),
+                                                                                    border: Border.all(
+                                                                                      color: Colors.grey,
+                                                                                    ),
+                                                                                  ),
+                                                                                  child: DropdownButtonFormField<String>(
+                                                                                    decoration: InputDecoration(
+                                                                                      contentPadding: EdgeInsets.symmetric(
+                                                                                        horizontal: 16,
+                                                                                        vertical: 8,
+                                                                                      ),
+                                                                                      border: InputBorder.none,
+                                                                                    ),
+                                                                                    value: selectedMatricule,
+                                                                                    onChanged: (value) {
+                                                                                      setState(() {
+                                                                                        selectedMatricule = value;
+                                                                                      });
+                                                                                    },
+                                                                                    items: matricules?.map((matricule) {
+                                                                                          return DropdownMenuItem<String>(
+                                                                                            value: matricule,
+                                                                                            child: Text(matricule),
+                                                                                          );
+                                                                                        }).toList() ??
+                                                                                        [],
+                                                                                  ),
+                                                                                );
+                                                                              }
+                                                                            },
+                                                                          ),
+                                                                          SizedBox(
+                                                                              height: 8),
+                                                                        ],
+                                                                      ),
                                                                   ],
-                                                                ),
-                                                            ],
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
-                                                  ],
-                                                )
-                                              : SizedBox.shrink(),
-                                        ),
-                                        SizedBox(height: 32),
-                                        ElevatedButton(
-                                          onPressed: submitReclamation,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 15,
-                                              horizontal: 30,
-                                            ),
-                                          ),
-                                          child:
-                                              Text('Soumettre la réclamation'),
-                                        )
-                                      ],
-                                    )
-                                  : SizedBox.shrink(),
+                                                                );
+                                                              }
+                                                            },
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : SizedBox.shrink(),
+                                              ),
+                                              SizedBox(height: 32),
+                                              ElevatedButton(
+                                                onPressed: submitReclamation,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.blue,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                    horizontal: 30,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                    'Soumettre la réclamation'),
+                                              )
+                                            ],
+                                          )
+                                        : SizedBox.shrink(),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        // Placeholder for the second page
+                        Placeholder(),
+                      ],
                     ),
                   ),
-                  // Placeholder for the second page
-                  Placeholder(),
-                ],
-              ),
-            ),
-          ),
+                ]),
+              ))
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

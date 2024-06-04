@@ -382,7 +382,7 @@ class _ModifierReclamationPageState extends State<ModifierReclamationPage> {
   Future<List<String>> getMatriculesForUser(String userId) async {
     List<String> matricules = [];
     QuerySnapshot<Map<String, dynamic>> snapshot =
-        await FirebaseFirestore.instance.collection('matricule').get();
+        await FirebaseFirestore.instance.collection('véhicule').get();
 
     snapshot.docs.forEach((doc) {
       matricules.add(doc.id);

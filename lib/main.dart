@@ -3,6 +3,7 @@ import 'package:carparking/pages/cote_admin/AdminDashboardPage.dart';
 import 'package:carparking/pages/cote_admin/gerer/reclamation_admin.dart';
 import 'package:carparking/pages/cote_admin/stat/ReservationFrequencyPage.dart';
 import 'package:carparking/pages/cote_admin/stat/reservationchart.dart';
+import 'package:carparking/pages/cote_user/profilepage.dart';
 import 'package:carparking/pages/cote_user/reclamlist.dart';
 import 'package:carparking/pages/cote_user/reservation/listeParking.dart';
 import 'package:carparking/pages/login_signup/firstPage.dart';
