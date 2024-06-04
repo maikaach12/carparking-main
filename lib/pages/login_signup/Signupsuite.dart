@@ -76,6 +76,7 @@ class _SignUpDetailsPageState extends State<SignUpDetailsPage> {
           'role': 'user',
           'desactiveparmoi': false,
           'active': true,
+          'nbrSignal': 0,
         });
 
         saveCarRegistrations(userCredential.user!.uid);
