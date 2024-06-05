@@ -46,10 +46,10 @@ class _GererParkingPageState extends State<GererParkingPage> {
   Future<void> _deleteParking(DocumentSnapshot document) async {
     final parkingId = document.id;
 
-    // Delete the parking document
+    // Supprimer le document du parking
     await _firestore.collection('parking').doc(parkingId).delete();
 
-    // Delete related documents from the 'place' collection
+    // Supprimer les documents associés de la collection 'place'
     final placesQuery = await _firestore
         .collection('place')
         .where('id_parking', isEqualTo: parkingId)
@@ -58,7 +58,7 @@ class _GererParkingPageState extends State<GererParkingPage> {
       await _firestore.collection('place').doc(doc.id).delete();
     }
 
-    // Delete related documents from the 'reservation' collection
+    // Supprimer les documents associés de la collection 'reservation'
     final reservationsQuery = await _firestore
         .collection('reservation')
         .where('idParking', isEqualTo: parkingId)
@@ -67,7 +67,7 @@ class _GererParkingPageState extends State<GererParkingPage> {
       await _firestore.collection('reservation').doc(doc.id).delete();
     }
 
-    // Show a snackbar or other UI feedback
+    // Afficher un message de confirmation
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Parking supprimé avec succès')),
     );
@@ -115,8 +115,10 @@ class _GererParkingPageState extends State<GererParkingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors
-          .lightBlue[50], // Définit la couleur de l'arrière-plan en bleu clair
+      appBar: AppBar(
+        title: Text('Gérer les Parkings'),
+      ),
+      backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -156,7 +158,7 @@ class _GererParkingPageState extends State<GererParkingPage> {
                     return Center(
                       child: Text(
                         'Aucun parking trouvé',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.black),
                       ),
                     );
                   }
@@ -165,12 +167,13 @@ class _GererParkingPageState extends State<GererParkingPage> {
                     itemBuilder: (context, index) {
                       DocumentSnapshot document = documents[index];
                       return Card(
+                        color: Colors.white,
                         margin: EdgeInsets.symmetric(
                             vertical: 10.0, horizontal: 5.0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        elevation: 5,
+                        elevation: 0, // Suppression de l'ombre
                         child: ListTile(
                           title: Text(
                             document['nom'],
@@ -286,8 +289,7 @@ void main() {
   runApp(MaterialApp(
     home: GererParkingPage(),
     theme: ThemeData(
-      primarySwatch: Colors.teal,
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: Colors.white,
       fontFamily: 'Roboto',
     ),
   ));

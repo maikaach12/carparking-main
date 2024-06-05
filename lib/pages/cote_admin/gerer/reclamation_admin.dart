@@ -52,7 +52,7 @@ class _ReclamationAdminPageState extends State<ReclamationAdminPage> {
                   .where((doc) => doc.get('status') == 'terminée')
                   .length;
               final envoyeCount = userReclamations
-                  .where((doc) => doc.get('status') == 'en attente')
+                  .where((doc) => doc.get('status') == 'envoyé')
                   .length;
 
               return FutureBuilder<String>(

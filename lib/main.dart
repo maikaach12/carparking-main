@@ -6,6 +6,7 @@ import 'package:carparking/pages/cote_admin/stat/reservationchart.dart';
 import 'package:carparking/pages/cote_user/profilepage.dart';
 import 'package:carparking/pages/cote_user/reclamlist.dart';
 import 'package:carparking/pages/cote_user/reservation/listeParking.dart';
+import 'package:carparking/pages/cote_user/reservation/paiement.dart';
 import 'package:carparking/pages/login_signup/firstPage.dart';
 import 'package:carparking/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

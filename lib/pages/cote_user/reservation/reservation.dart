@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:carparking/pages/cote_user/MesReservationsPage.dart';
+import 'package:carparking/pages/cote_user/reservation/paiement.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -420,7 +421,15 @@ class _ReservationPageState extends State<ReservationPage> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    Navigator.of(context).pop();
+                                    // Naviguer vers la page MesReservationsPage
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => PaiementPage(
+                                          userId: '',
+                                        ),
+                                      ),
+                                    );
                                   },
                                   icon: Icon(Icons.done),
                                   label: Text(

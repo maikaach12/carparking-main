@@ -14,7 +14,9 @@ class _ReservationPageState extends State<reservationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Réservations'),
+        title: Text('Réservations',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -28,8 +30,9 @@ class _ReservationPageState extends State<reservationPage> {
               },
               decoration: InputDecoration(
                 hintText: 'Rechercher par ID de place ou date',
+                prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),
@@ -67,120 +70,137 @@ class _ReservationPageState extends State<reservationPage> {
                 }).toList();
 
                 if (reservations.isEmpty) {
-                  return Center(child: Text('Aucune réservation en cours'));
+                  return Center(
+                      child: Text('Aucune réservation en cours',
+                          style: TextStyle(fontSize: 18)));
                 }
 
                 return GridView.builder(
                   padding: EdgeInsets.all(16),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount:
-                        MediaQuery.of(context).size.width > 600 ? 3 : 1,
-                    childAspectRatio:
-                        2.5, // Augmenter le ratio pour réduire la hauteur
+                        MediaQuery.of(context).size.width > 600 ? 2 : 1,
+                    childAspectRatio: 2.5,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
                   itemCount: reservations.length,
                   itemBuilder: (context, index) {
                     final reservation = reservations[index];
-                    return Card(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(8), // Réduction du padding
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.person, size: 16),
-                                SizedBox(
-                                    width:
-                                        4), // Réduction de l'espacement horizontal
-                                Expanded(
-                                  child: Text(
-                                    reservation.userId,
-                                    style: TextStyle(
-                                      fontSize:
-                                          14, // Réduction de la taille de la police
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                                height:
-                                    4), // Réduction de l'espacement vertical
-                            Row(
-                              children: [
-                                Icon(Icons.place, size: 16),
-                                SizedBox(
-                                    width:
-                                        4), // Réduction de l'espacement horizontal
-                                Expanded(
-                                  child: Text(
-                                    reservation.idPlace,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                                height:
-                                    4), // Réduction de l'espacement vertical
-                            Row(
-                              children: [
-                                Icon(Icons.access_time, size: 16),
-                                SizedBox(
-                                    width:
-                                        4), // Réduction de l'espacement horizontal
-                                Expanded(
-                                  child: Text(
-                                    'Début: ${DateFormat('dd/MM/yyyy HH:mm').format(reservation.startTime)}',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.access_time, size: 16),
-                                SizedBox(
-                                    width:
-                                        4), // Réduction de l'espacement horizontal
-                                Expanded(
-                                  child: Text(
-                                    'Fin: ${DateFormat('dd/MM/yyyy HH:mm').format(reservation.endTime)}',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Spacer(),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: IconButton(
-                                icon: Icon(Icons.cancel,
-                                    color: Colors.blue, size: 20),
-                                onPressed: () {
-                                  _showNotificationForm(reservation.userId);
-                                  FirebaseFirestore.instance
-                                      .collection('reservation')
-                                      .doc(reservation.id)
-                                      .delete(); // Supprimer la réservation de la collection reservation
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(reservation.userId)
+                          .get(),
+                      builder: (context, userSnapshot) {
+                        if (!userSnapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        final userData = userSnapshot.data!.data()
+                            as Map<String, dynamic>?; // This avoids null error
+                        final familyName =
+                            userData?['familyName'] ?? 'Nom non trouvé';
+                        final name = userData?['name'] ?? 'Prénom non trouvé';
 
-                                  // Supprimer la réservation du tableau "reservations" dans le document de la place
-                                  _deleteReservationFromPlace(reservation);
-                                },
-                              ),
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            side: BorderSide(
+                                color: Colors.grey.shade300, width: 1),
+                          ),
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          color: Colors.white,
+                          // Suppression de l'ombre
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.person,
+                                        size: 20, color: Colors.black),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '$familyName $name',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.local_parking_sharp,
+                                        size: 20, color: Colors.black),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        reservation.idPlace,
+                                        style: TextStyle(fontSize: 14),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time,
+                                        size: 20, color: Colors.blue),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '${DateFormat('dd/MM/yyyy HH:mm').format(reservation.startTime)}',
+                                        style: TextStyle(fontSize: 14),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.timer_off,
+                                        size: 20, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        '${DateFormat('dd/MM/yyyy HH:mm').format(reservation.endTime)}',
+                                        style: TextStyle(fontSize: 14),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Spacer(),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: IconButton(
+                                    icon: Icon(Icons.cancel,
+                                        color: Colors.redAccent, size: 24),
+                                    onPressed: () {
+                                      _showNotificationForm(reservation.userId);
+                                      FirebaseFirestore.instance
+                                          .collection('reservation')
+                                          .doc(reservation.id)
+                                          .delete();
+
+                                      _deleteReservationFromPlace(reservation);
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -195,8 +215,6 @@ class _ReservationPageState extends State<reservationPage> {
   void _showNotificationForm(String userId) {
     TextEditingController typeController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
-
-    // Remplir le champ userId avec la valeur fournie
     TextEditingController userIdController =
         TextEditingController(text: userId);
 
@@ -205,15 +223,13 @@ class _ReservationPageState extends State<reservationPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Nouvelle notification'),
-          backgroundColor:
-              Colors.white, // Couleur de fond de la boîte de dialogue
+          backgroundColor: Colors.white,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: userIdController,
-                enabled:
-                    false, // Empêcher l'utilisateur de modifier le champ userId
+                enabled: false,
                 decoration: InputDecoration(labelText: 'UserID'),
               ),
               TextField(
@@ -231,25 +247,16 @@ class _ReservationPageState extends State<reservationPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'Annuler',
-                style: TextStyle(
-                    color: Colors.blue), // Couleur du texte du bouton Annuler
-              ),
+              child: Text('Annuler', style: TextStyle(color: Colors.teal)),
             ),
             TextButton(
               onPressed: () {
                 String type = typeController.text;
                 String description = descriptionController.text;
                 _sendNotification(userId, type, description);
-                // Vous pouvez également ajouter ici le code pour annuler la réservation
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'OK',
-                style: TextStyle(
-                    color: Colors.blue), // Couleur du texte du bouton OK
-              ),
+              child: Text('OK', style: TextStyle(color: Colors.teal)),
             ),
           ],
         );
@@ -258,7 +265,6 @@ class _ReservationPageState extends State<reservationPage> {
   }
 
   void _sendNotification(String userId, String type, String description) {
-    // Enregistrer les données dans la collection 'notifications' de Firestore
     FirebaseFirestore.instance.collection('notifications').add({
       'userId': userId,
       'type': type,
@@ -269,14 +275,10 @@ class _ReservationPageState extends State<reservationPage> {
   }
 
   Future<void> _deleteReservationFromPlace(Reservation reservation) async {
-    // Obtenir l'ID de la place associée à la réservation
     final idPlace = reservation.idPlace;
-
-    // Récupérer le document de la place depuis la collection "place"
     final placeDoc =
         await FirebaseFirestore.instance.collection('place').doc(idPlace).get();
 
-    // Mettre à jour le tableau "reservations" en supprimant la réservation annulée
     if (placeDoc.exists) {
       final reservations = placeDoc.data()?['reservations'] ?? [];
       final updatedReservations = reservations.where((res) {

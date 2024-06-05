@@ -136,7 +136,8 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                     ),
                     child: Card(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(7.0),
+                        side: BorderSide(color: Colors.grey.shade300, width: 1),
                       ),
                       color: Colors.white,
                       child: Container(
@@ -320,21 +321,13 @@ class _MesReservationsPageState extends State<MesReservationsPage> {
                                 alignment: Alignment.bottomRight,
                                 child: Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: ElevatedButton(
+                                  child: IconButton(
                                     onPressed: () {
                                       _supprimerReservation(reservation.id);
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Color.fromRGBO(55, 125, 196, 1),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(14.0),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Supprimer',
-                                      style: TextStyle(color: Colors.white),
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: Colors.grey,
                                     ),
                                   ),
                                 ),
